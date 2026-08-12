@@ -5,9 +5,11 @@ import { LayoutDashboard, Dumbbell, BookOpen, ClipboardList } from 'lucide-react
 interface SidebarProps {
   activeTab: ViewTab;
   setActiveTab: (tab: ViewTab) => void;
+  username: string;
+  onLogout: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, username, onLogout }) => {
   const navItems: { id: ViewTab; label: string; icon: React.ElementType; badge?: string }[] = [
     { id: 'dashboard',    label: 'Dashboard', icon: LayoutDashboard },
     { id: 'live_workout', label: 'Today',     icon: Dumbbell,     badge: '●' },
@@ -45,9 +47,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
         })}
       </nav>
 
-      <div className="mt-auto pt-4 border-t border-[#1a1a1a]/10 font-mono text-[0.6rem] leading-relaxed text-[#1a1a1a]/60">
-        STATUS: <span className="text-emerald-600 font-bold">ACTIVE</span><br />
-        50 exercises / 6 programs
+      <div className="mt-8 pt-4 border-t border-[#1a1a1a]/10">
+        <div className="flex items-center justify-between mb-2">
+          <div className="font-mono text-[0.75rem] font-bold uppercase text-[#1a1a1a] truncate">
+            {username}
+          </div>
+          <button 
+            onClick={onLogout}
+            className="text-[0.6rem] font-mono font-bold uppercase text-[#ff4d00] hover:underline cursor-pointer"
+          >
+            Logout
+          </button>
+        </div>
+        <div className="font-mono text-[0.6rem] leading-relaxed text-[#1a1a1a]/60">
+          STATUS: <span className="text-emerald-600 font-bold">ACTIVE</span><br />
+          50 exercises / 6 programs
+        </div>
       </div>
     </aside>
   );

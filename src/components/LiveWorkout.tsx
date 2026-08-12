@@ -115,7 +115,7 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
       <div className="max-w-3xl mx-auto space-y-6 fade-in-up">
         {/* Toast */}
         {showCompleteToast && (
-          <div className="slide-in-right fixed top-6 right-6 z-50 w-80 bg-[#1a1a1a] text-[#f8f7f4] border-2 border-[#ff4d00] p-5 shadow-[4px_4px_0_#ff4d00]">
+          <div className="slide-in-right fixed bottom-6 right-6 z-50 w-80 bg-[#1a1a1a] text-[#f8f7f4] border-2 border-[#ff4d00] p-5 shadow-[4px_4px_0_#ff4d00]">
             <div className="flex justify-between items-start mb-2">
               <span className="font-mono text-[0.55rem] font-black uppercase text-[#ff4d00]">Workout Complete!</span>
               <button onClick={() => setShowCompleteToast(false)} className="cursor-pointer text-[#f8f7f4]/60 hover:text-[#f8f7f4]">

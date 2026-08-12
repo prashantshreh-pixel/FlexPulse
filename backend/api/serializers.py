@@ -1,0 +1,70 @@
+from rest_framework import serializers
+from django.contrib.auth.models import User
+from .models import Exercise, Routine, RoutineExercise, WorkoutLog, SetLog
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email']
+
+class RegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'password', 'email']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data.get('email', ''),
+            password=validated_data['password']
+        )
+        return user
+class ExerciseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Exercise
+        fields = ['id', 'name', 'muscle_group', 'equipment', 'category', 'instructions', 'is_custom']
+
+class RoutineExerciseSerializer(serializers.ModelSerializer):
+    exercise = ExerciseSerializer(read_only=True)
+    
+    class Meta:
+        model = RoutineExercise
+        fields = ['id', 'exercise', 'target_sets', 'target_reps', 'order_index', 'notes']
+
+class RoutineSerializer(serializers.ModelSerializer):
+    exercises = RoutineExerciseSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Routine
+        fields = ['id', 'name', 'description', 'is_template', 'exercises']
+
+class SetLogSerializer(serializers.ModelSerializer):
+    exercise_id = serializers.PrimaryKeyRelatedField(
+        queryset=Exercise.objects.all(), source='exercise'
+    )
+    exercise_name = serializers.CharField(source='exercise.name', read_only=True)
+    muscle_group = serializers.CharField(source='exercise.muscle_group', read_only=True)
+
+    class Meta:
+        model = SetLog
+        fields = ['id', 'exercise_id', 'exercise_name', 'muscle_group', 'set_number', 'weight_lbs', 'reps', 'rpe', 'is_pr', 'logged_at']
+        read_only_fields = ['is_pr']
+
+class WorkoutLogSerializer(serializers.ModelSerializer):
+    sets = SetLogSerializer(many=True)
+
+    class Meta:
+        model = WorkoutLog
+        fields = ['id', 'title', 'started_at', 'completed_at', 'duration_seconds', 'total_volume_lbs', 'status', 'sets']
+        read_only_fields = ['total_volume_lbs']
+
+    def create(self, validated_data):
+        sets_data = validated_data.pop('sets', [])
+        user = self.context['request'].user
+        workout = WorkoutLog.objects.create(user=user, **validated_data)
+        
+        for set_data in sets_data:
+            SetLog.objects.create(workout=workout, **set_data)
+            
+        workout.update_total_volume()
+        return workout

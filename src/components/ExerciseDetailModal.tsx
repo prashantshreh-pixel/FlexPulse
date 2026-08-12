@@ -11,13 +11,13 @@ interface ExerciseDetailModalProps {
 
 // ── Exercise animation per muscle group ──────────────────────────────────────
 const AnimationBox: React.FC<{ muscleGroup: string; category: string }> = ({ muscleGroup, category }) => {
-  const config: Record<string, { animation: string; color: string; bg: string; label: string; icon: string }> = {
-    Chest:     { animation: 'ex-push 1.8s ease-in-out infinite',    color: '#ef4444', bg: '#fef2f2', label: 'HORIZONTAL PUSH',   icon: '⇄' },
-    Back:      { animation: 'ex-pull 1.8s ease-in-out infinite',    color: '#3b82f6', bg: '#eff6ff', label: 'HORIZONTAL PULL',   icon: '⇄' },
-    Legs:      { animation: 'ex-squat 2s ease-in-out infinite',     color: '#10b981', bg: '#f0fdf4', label: 'VERTICAL PRESS',    icon: '⇅' },
-    Shoulders: { animation: 'ex-press 1.8s ease-in-out infinite',   color: '#f59e0b', bg: '#fffbeb', label: 'VERTICAL PUSH',     icon: '↑' },
-    Arms:      { animation: 'ex-curl 2s ease-in-out infinite',      color: '#f97316', bg: '#fff7ed', label: 'HINGE / CURL',      icon: '⤵' },
-    Core:      { animation: 'ex-crunch 2s ease-in-out infinite',    color: '#8b5cf6', bg: '#f5f3ff', label: 'FLEXION',           icon: '◎' },
+  const config: Record<string, { animation: string; color: string; bg: string; label: string; icon: string; gif: string }> = {
+    Chest:     { animation: 'ex-push 1.8s ease-in-out infinite',    color: '#ef4444', bg: '#fef2f2', label: 'HORIZONTAL PUSH',   icon: '⇄', gif: 'https://media.giphy.com/media/3o6Ztp2VbvwP6G3fIk/giphy.gif' },
+    Back:      { animation: 'ex-pull 1.8s ease-in-out infinite',    color: '#3b82f6', bg: '#eff6ff', label: 'HORIZONTAL PULL',   icon: '⇄', gif: 'https://media.giphy.com/media/l0HlJz5f3xG2g8vO8/giphy.gif' },
+    Legs:      { animation: 'ex-squat 2s ease-in-out infinite',     color: '#10b981', bg: '#f0fdf4', label: 'VERTICAL PRESS',    icon: '⇅', gif: 'https://media.giphy.com/media/3o7aDcf9P2rO10134Q/giphy.gif' },
+    Shoulders: { animation: 'ex-press 1.8s ease-in-out infinite',   color: '#f59e0b', bg: '#fffbeb', label: 'VERTICAL PUSH',     icon: '↑', gif: 'https://media.giphy.com/media/xT0xez3Jz9B4y1O3rG/giphy.gif' },
+    Arms:      { animation: 'ex-curl 2s ease-in-out infinite',      color: '#f97316', bg: '#fff7ed', label: 'HINGE / CURL',      icon: '⤵', gif: 'https://media.giphy.com/media/26AHvV3P8bXG3w2e4/giphy.gif' },
+    Core:      { animation: 'ex-crunch 2s ease-in-out infinite',    color: '#8b5cf6', bg: '#f5f3ff', label: 'FLEXION',           icon: '◎', gif: 'https://media.giphy.com/media/l41YwXp2J5m8jC0Q8/giphy.gif' },
   };
 
   const c = config[muscleGroup] || config.Chest;
@@ -27,8 +27,18 @@ const AnimationBox: React.FC<{ muscleGroup: string; category: string }> = ({ mus
       className="relative flex items-center justify-center rounded-none border-2 border-[#1a1a1a] overflow-hidden"
       style={{ background: c.bg, height: '200px' }}
     >
-      {/* Moving shape representing exercise movement */}
+      <div className="absolute inset-0 z-10">
+        <img 
+          src={c.gif} 
+          alt="Exercise Demonstration" 
+          className="w-full h-full object-cover mix-blend-multiply opacity-80"
+          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+        />
+      </div>
+
+      {/* Moving shape representing exercise movement (Fallback / Overlay) */}
       <div
+        className="z-0"
         style={{ animation: c.animation, color: c.color, fontSize: '5rem', lineHeight: 1, transformOrigin: 'bottom center' }}
       >
         {muscleGroup === 'Chest' && '🏋️'}
@@ -40,7 +50,7 @@ const AnimationBox: React.FC<{ muscleGroup: string; category: string }> = ({ mus
       </div>
 
       {/* Labels */}
-      <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
+      <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end z-20">
         <span
           className="font-mono text-[0.55rem] font-black uppercase px-2 py-0.5 text-white"
           style={{ backgroundColor: c.color }}
