@@ -1,0 +1,1647 @@
+{
+  "exercises": [
+    {
+      "id": "ex-1",
+      "name": "Barbell Bench Press",
+      "muscleGroup": "Chest",
+      "equipment": "Barbell",
+      "category": "Compound",
+      "instructions": "Lie flat, grip bar slightly wider than shoulder-width. Lower to mid-chest, drive up explosively."
+    },
+    {
+      "id": "ex-2",
+      "name": "Incline Dumbbell Press",
+      "muscleGroup": "Chest",
+      "equipment": "Dumbbell",
+      "category": "Compound",
+      "instructions": "Set bench to 30°. Press dumbbells overhead, squeezing upper chest at top."
+    },
+    {
+      "id": "ex-3",
+      "name": "Cable Chest Flyes",
+      "muscleGroup": "Chest",
+      "equipment": "Cable",
+      "category": "Isolation",
+      "instructions": "Set cables to chest height. Hug arms forward with slight elbow bend, squeezing inner chest."
+    },
+    {
+      "id": "ex-15",
+      "name": "Flat Dumbbell Press",
+      "muscleGroup": "Chest",
+      "equipment": "Dumbbell",
+      "category": "Compound",
+      "instructions": "Lie flat, press dumbbells from chest level to full lockout, palms facing forward."
+    },
+    {
+      "id": "ex-16",
+      "name": "Decline Barbell Bench",
+      "muscleGroup": "Chest",
+      "equipment": "Barbell",
+      "category": "Compound",
+      "instructions": "Set bench to -15°. Lower bar to lower chest, press up while keeping elbows tucked."
+    },
+    {
+      "id": "ex-17",
+      "name": "Pec Deck / Chest Fly Machine",
+      "muscleGroup": "Chest",
+      "equipment": "Machine",
+      "category": "Isolation",
+      "instructions": "Sit with back flat. Bring handles together in front of chest, pause and squeeze."
+    },
+    {
+      "id": "ex-18",
+      "name": "Chest Dip",
+      "muscleGroup": "Chest",
+      "equipment": "Bodyweight",
+      "category": "Compound",
+      "instructions": "Lean torso forward 30°, lower until arms hit 90°. Drive up, squeezing chest at top."
+    },
+    {
+      "id": "ex-7",
+      "name": "Barbell Conventional Deadlift",
+      "muscleGroup": "Back",
+      "equipment": "Barbell",
+      "category": "Compound",
+      "instructions": "Mid-foot under bar, grip shoulder-width, flat back. Drive floor away and lock hips."
+    },
+    {
+      "id": "ex-8",
+      "name": "Lat Pulldown",
+      "muscleGroup": "Back",
+      "equipment": "Cable",
+      "category": "Compound",
+      "instructions": "Wide overhand grip. Pull bar to upper chest, arch upper back and squeeze lats."
+    },
+    {
+      "id": "ex-9",
+      "name": "Seated Cable Row",
+      "muscleGroup": "Back",
+      "equipment": "Cable",
+      "category": "Compound",
+      "instructions": "Neutral spine, pull handle to lower sternum, driving elbows backward."
+    },
+    {
+      "id": "ex-19",
+      "name": "Barbell Bent-Over Row",
+      "muscleGroup": "Back",
+      "equipment": "Barbell",
+      "category": "Compound",
+      "instructions": "Hinge to 45°, overhand grip. Pull bar to lower ribcage, squeeze shoulder blades."
+    },
+    {
+      "id": "ex-20",
+      "name": "T-Bar Row",
+      "muscleGroup": "Back",
+      "equipment": "Barbell",
+      "category": "Compound",
+      "instructions": "Straddle bar, chest on pad. Pull handles to chest, keeping elbows close to body."
+    },
+    {
+      "id": "ex-21",
+      "name": "Pull-Up / Chin-Up",
+      "muscleGroup": "Back",
+      "equipment": "Bodyweight",
+      "category": "Compound",
+      "instructions": "Dead hang, full grip. Pull chest to bar driving elbows down and back. Lower controlled."
+    },
+    {
+      "id": "ex-22",
+      "name": "Single Arm Dumbbell Row",
+      "muscleGroup": "Back",
+      "equipment": "Dumbbell",
+      "category": "Compound",
+      "instructions": "Brace on bench, neutral spine. Row dumbbell to hip, keeping elbow close to torso."
+    },
+    {
+      "id": "ex-49",
+      "name": "Sumo Deadlift",
+      "muscleGroup": "Back",
+      "equipment": "Barbell",
+      "category": "Compound",
+      "instructions": "Wide stance, toes out. Grip inside knees, drive hips through at lockout."
+    },
+    {
+      "id": "ex-50",
+      "name": "Chest Supported Row",
+      "muscleGroup": "Back",
+      "equipment": "Machine",
+      "category": "Compound",
+      "instructions": "Lie face down on inclined pad. Row handles to chest, squeezing mid-back at top."
+    },
+    {
+      "id": "ex-4",
+      "name": "Barbell Back Squat",
+      "muscleGroup": "Legs",
+      "equipment": "Barbell",
+      "category": "Compound",
+      "instructions": "Bar across upper traps. Hinge hips back and down past parallel, drive through heels."
+    },
+    {
+      "id": "ex-5",
+      "name": "Romanian Deadlift",
+      "muscleGroup": "Legs",
+      "equipment": "Barbell",
+      "category": "Compound",
+      "instructions": "Soft knees, hinge at hips. Lower bar along shins until hamstrings stretch fully."
+    },
+    {
+      "id": "ex-6",
+      "name": "Leg Extension Machine",
+      "muscleGroup": "Legs",
+      "equipment": "Machine",
+      "category": "Isolation",
+      "instructions": "Adjust pad to lower shins. Extend knees fully, pause at peak lockout."
+    },
+    {
+      "id": "ex-24",
+      "name": "Front Barbell Squat",
+      "muscleGroup": "Legs",
+      "equipment": "Barbell",
+      "category": "Compound",
+      "instructions": "Clean grip or cross-arm. Elbows high, torso upright. Squat deep, drive knees out."
+    },
+    {
+      "id": "ex-25",
+      "name": "Leg Press",
+      "muscleGroup": "Legs",
+      "equipment": "Machine",
+      "category": "Compound",
+      "instructions": "Feet shoulder-width on plate. Lower sled until 90°, press through heels to extension."
+    },
+    {
+      "id": "ex-26",
+      "name": "Lying Leg Curl",
+      "muscleGroup": "Legs",
+      "equipment": "Machine",
+      "category": "Isolation",
+      "instructions": "Lie prone, pad just above ankles. Curl heels toward glutes, pause, lower controlled."
+    },
+    {
+      "id": "ex-27",
+      "name": "Bulgarian Split Squat",
+      "muscleGroup": "Legs",
+      "equipment": "Dumbbell",
+      "category": "Compound",
+      "instructions": "Rear foot elevated, front foot forward. Lower rear knee to floor, drive through front heel."
+    },
+    {
+      "id": "ex-28",
+      "name": "Hack Squat",
+      "muscleGroup": "Legs",
+      "equipment": "Machine",
+      "category": "Compound",
+      "instructions": "Feet shoulder-width on platform. Lower until deep flex, drive through heels to lockout."
+    },
+    {
+      "id": "ex-29",
+      "name": "Standing Calf Raise",
+      "muscleGroup": "Legs",
+      "equipment": "Machine",
+      "category": "Isolation",
+      "instructions": "Balls of feet on edge. Lower heel fully, then drive up to full contraction. Slow tempo."
+    },
+    {
+      "id": "ex-47",
+      "name": "Hip Thrust",
+      "muscleGroup": "Legs",
+      "equipment": "Barbell",
+      "category": "Compound",
+      "instructions": "Upper back on bench, bar across hips. Drive hips up to full lockout, squeeze glutes."
+    },
+    {
+      "id": "ex-48",
+      "name": "Step-Up",
+      "muscleGroup": "Legs",
+      "equipment": "Dumbbell",
+      "category": "Compound",
+      "instructions": "Step onto elevated surface, drive through front heel until standing. Step back controlled."
+    },
+    {
+      "id": "ex-10",
+      "name": "Overhead Barbell Press (OHP)",
+      "muscleGroup": "Shoulders",
+      "equipment": "Barbell",
+      "category": "Compound",
+      "instructions": "Unrack at collarbone. Press straight up, locking out elbows and pressing head through."
+    },
+    {
+      "id": "ex-11",
+      "name": "Dumbbell Lateral Raise",
+      "muscleGroup": "Shoulders",
+      "equipment": "Dumbbell",
+      "category": "Isolation",
+      "instructions": "Raise dumbbells outward to shoulder height with slight forward tilt. Squeeze at top."
+    },
+    {
+      "id": "ex-30",
+      "name": "Dumbbell Shoulder Press",
+      "muscleGroup": "Shoulders",
+      "equipment": "Dumbbell",
+      "category": "Compound",
+      "instructions": "Press dumbbells overhead from ear level, rotating wrists slightly. Lock out fully."
+    },
+    {
+      "id": "ex-31",
+      "name": "Face Pull",
+      "muscleGroup": "Shoulders",
+      "equipment": "Cable",
+      "category": "Isolation",
+      "instructions": "Rope at head height, elbows flared. Pull to forehead, externally rotating shoulders."
+    },
+    {
+      "id": "ex-32",
+      "name": "Arnold Press",
+      "muscleGroup": "Shoulders",
+      "equipment": "Dumbbell",
+      "category": "Compound",
+      "instructions": "Start palms facing you. As you press up, rotate until palms face out at lockout."
+    },
+    {
+      "id": "ex-33",
+      "name": "Rear Delt Dumbbell Fly",
+      "muscleGroup": "Shoulders",
+      "equipment": "Dumbbell",
+      "category": "Isolation",
+      "instructions": "Bent over 90°. Raise arms out to sides, squeezing rear deltoids at top."
+    },
+    {
+      "id": "ex-34",
+      "name": "Barbell Upright Row",
+      "muscleGroup": "Shoulders",
+      "equipment": "Barbell",
+      "category": "Compound",
+      "instructions": "Narrow grip, pull bar up along body to chin level with elbows leading."
+    },
+    {
+      "id": "ex-12",
+      "name": "EZ-Bar Bicep Curl",
+      "muscleGroup": "Arms",
+      "equipment": "Barbell",
+      "category": "Isolation",
+      "instructions": "Elbows pinned at sides. Curl bar to shoulder height, squeeze biceps at top."
+    },
+    {
+      "id": "ex-13",
+      "name": "Tricep Rope Pushdown",
+      "muscleGroup": "Arms",
+      "equipment": "Cable",
+      "category": "Isolation",
+      "instructions": "Push rope attachment straight down, flaring ends outward at full extension."
+    },
+    {
+      "id": "ex-35",
+      "name": "Barbell Bicep Curl",
+      "muscleGroup": "Arms",
+      "equipment": "Barbell",
+      "category": "Isolation",
+      "instructions": "Straight bar, shoulder-width grip. Curl in a strict arc, no swinging."
+    },
+    {
+      "id": "ex-36",
+      "name": "Dumbbell Hammer Curl",
+      "muscleGroup": "Arms",
+      "equipment": "Dumbbell",
+      "category": "Isolation",
+      "instructions": "Neutral grip (thumbs up). Curl up while keeping elbows stationary."
+    },
+    {
+      "id": "ex-37",
+      "name": "Preacher Curl",
+      "muscleGroup": "Arms",
+      "equipment": "Barbell",
+      "category": "Isolation",
+      "instructions": "Arms braced on preacher pad. Curl slowly, pause at top, lower with control."
+    },
+    {
+      "id": "ex-38",
+      "name": "Cable Bicep Curl",
+      "muscleGroup": "Arms",
+      "equipment": "Cable",
+      "category": "Isolation",
+      "instructions": "Low pulley, underhand grip. Curl up with constant tension, pause at top."
+    },
+    {
+      "id": "ex-39",
+      "name": "Tricep Dip",
+      "muscleGroup": "Arms",
+      "equipment": "Bodyweight",
+      "category": "Compound",
+      "instructions": "Upright torso, elbows pointing back. Lower to 90°, drive up to lockout."
+    },
+    {
+      "id": "ex-40",
+      "name": "Close Grip Bench Press",
+      "muscleGroup": "Arms",
+      "equipment": "Barbell",
+      "category": "Compound",
+      "instructions": "Shoulder-width grip. Lower bar to lower chest, drive up focusing on tricep contraction."
+    },
+    {
+      "id": "ex-41",
+      "name": "Skull Crusher",
+      "muscleGroup": "Arms",
+      "equipment": "Barbell",
+      "category": "Isolation",
+      "instructions": "Lie flat, bar above chest. Lower bar toward forehead by flexing at elbows only."
+    },
+    {
+      "id": "ex-42",
+      "name": "Cable Overhead Tricep Ext",
+      "muscleGroup": "Arms",
+      "equipment": "Cable",
+      "category": "Isolation",
+      "instructions": "High pulley, face away. Press forward/down until full extension, keep elbows tight."
+    },
+    {
+      "id": "ex-14",
+      "name": "Hanging Leg Raise",
+      "muscleGroup": "Core",
+      "equipment": "Bodyweight",
+      "category": "Isolation",
+      "instructions": "Hang from pull-up bar. Flex core to lift straight legs to 90°, no momentum."
+    },
+    {
+      "id": "ex-43",
+      "name": "Plank",
+      "muscleGroup": "Core",
+      "equipment": "Bodyweight",
+      "category": "Isolation",
+      "instructions": "Forearms on floor, body straight. Squeeze core and glutes, breathe steadily."
+    },
+    {
+      "id": "ex-44",
+      "name": "Ab Wheel Rollout",
+      "muscleGroup": "Core",
+      "equipment": "Bodyweight",
+      "category": "Isolation",
+      "instructions": "From knees, extend wheel forward until hips near floor. Contract abs to pull back."
+    },
+    {
+      "id": "ex-45",
+      "name": "Cable Crunch",
+      "muscleGroup": "Core",
+      "equipment": "Cable",
+      "category": "Isolation",
+      "instructions": "Kneel at high pulley. Crunch elbows to knees, rounding spine fully."
+    },
+    {
+      "id": "ex-46",
+      "name": "Russian Twist",
+      "muscleGroup": "Core",
+      "equipment": "Bodyweight",
+      "category": "Isolation",
+      "instructions": "Feet elevated, torso at 45°. Rotate side to side, keeping core braced."
+    }
+  ],
+  "programs": [
+    {
+      "id": "prog-1",
+      "name": "Push Pull Legs",
+      "shortName": "PPL",
+      "split": "PPL",
+      "description": "The gold standard split for intermediate lifters. Trains each muscle twice weekly with dedicated push, pull, and leg sessions for maximum volume and recovery.",
+      "frequency": "6 days/week",
+      "difficulty": "Intermediate",
+      "goal": "Hypertrophy",
+      "days": [
+        {
+          "id": "ppl-1",
+          "label": "Day 1",
+          "name": "Push A — Chest, Shoulders & Triceps",
+          "musclesFocus": [
+            "Chest",
+            "Shoulders",
+            "Arms"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-1",
+              "sets": 4,
+              "reps": "5",
+              "restSeconds": 180,
+              "notes": "Heavy compound opener"
+            },
+            {
+              "exerciseId": "ex-10",
+              "sets": 3,
+              "reps": "8",
+              "restSeconds": 150
+            },
+            {
+              "exerciseId": "ex-2",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-3",
+              "sets": 3,
+              "reps": "12-15",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-11",
+              "sets": 4,
+              "reps": "15",
+              "restSeconds": 60
+            },
+            {
+              "exerciseId": "ex-13",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 60
+            }
+          ]
+        },
+        {
+          "id": "ppl-2",
+          "label": "Day 2",
+          "name": "Pull A — Back & Biceps",
+          "musclesFocus": [
+            "Back",
+            "Arms"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-7",
+              "sets": 3,
+              "reps": "5",
+              "restSeconds": 180,
+              "notes": "Deadlift opener"
+            },
+            {
+              "exerciseId": "ex-19",
+              "sets": 4,
+              "reps": "8",
+              "restSeconds": 150
+            },
+            {
+              "exerciseId": "ex-8",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-9",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-31",
+              "sets": 3,
+              "reps": "15",
+              "restSeconds": 60
+            },
+            {
+              "exerciseId": "ex-12",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 60
+            }
+          ]
+        },
+        {
+          "id": "ppl-3",
+          "label": "Day 3",
+          "name": "Legs A — Quads Focus",
+          "musclesFocus": [
+            "Legs"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-4",
+              "sets": 4,
+              "reps": "6",
+              "restSeconds": 180,
+              "notes": "Squat opener — heaviest set"
+            },
+            {
+              "exerciseId": "ex-5",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 150
+            },
+            {
+              "exerciseId": "ex-25",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-6",
+              "sets": 3,
+              "reps": "15",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-26",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-29",
+              "sets": 4,
+              "reps": "15",
+              "restSeconds": 60
+            }
+          ]
+        },
+        {
+          "id": "ppl-4",
+          "label": "Day 4",
+          "name": "Push B — Shoulders & Chest Volume",
+          "musclesFocus": [
+            "Shoulders",
+            "Chest",
+            "Arms"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-30",
+              "sets": 4,
+              "reps": "8",
+              "restSeconds": 150
+            },
+            {
+              "exerciseId": "ex-2",
+              "sets": 4,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-18",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-17",
+              "sets": 3,
+              "reps": "15",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-32",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-42",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 60
+            }
+          ]
+        },
+        {
+          "id": "ppl-5",
+          "label": "Day 5",
+          "name": "Pull B — Width & Rear Delts",
+          "musclesFocus": [
+            "Back",
+            "Shoulders",
+            "Arms"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-21",
+              "sets": 4,
+              "reps": "8",
+              "restSeconds": 150,
+              "notes": "Add weight if 8+ easy"
+            },
+            {
+              "exerciseId": "ex-20",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-22",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-33",
+              "sets": 3,
+              "reps": "15",
+              "restSeconds": 60
+            },
+            {
+              "exerciseId": "ex-36",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 60
+            },
+            {
+              "exerciseId": "ex-38",
+              "sets": 3,
+              "reps": "15",
+              "restSeconds": 60
+            }
+          ]
+        },
+        {
+          "id": "ppl-6",
+          "label": "Day 6",
+          "name": "Legs B — Posterior Chain Focus",
+          "musclesFocus": [
+            "Legs"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-24",
+              "sets": 4,
+              "reps": "6",
+              "restSeconds": 180
+            },
+            {
+              "exerciseId": "ex-47",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-27",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 120,
+              "notes": "Per leg"
+            },
+            {
+              "exerciseId": "ex-28",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-26",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-29",
+              "sets": 4,
+              "reps": "20",
+              "restSeconds": 60
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prog-2",
+      "name": "Arnold Split",
+      "shortName": "Arnold",
+      "split": "Arnold Split",
+      "description": "Arnold Schwarzenegger's legendary 6-day split. Combines antagonistic muscle groups (chest + back, shoulders + arms) for maximum pump and density. Train each pairing twice per week.",
+      "frequency": "6 days/week",
+      "difficulty": "Advanced",
+      "goal": "Hypertrophy",
+      "days": [
+        {
+          "id": "arnold-1",
+          "label": "Day 1",
+          "name": "Chest & Back A",
+          "musclesFocus": [
+            "Chest",
+            "Back"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-1",
+              "sets": 4,
+              "reps": "8",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-19",
+              "sets": 4,
+              "reps": "8",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-2",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-21",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-3",
+              "sets": 3,
+              "reps": "12-15",
+              "restSeconds": 60
+            },
+            {
+              "exerciseId": "ex-9",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 60
+            }
+          ]
+        },
+        {
+          "id": "arnold-2",
+          "label": "Day 2",
+          "name": "Shoulders & Arms A",
+          "musclesFocus": [
+            "Shoulders",
+            "Arms"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-10",
+              "sets": 4,
+              "reps": "8",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-12",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-32",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-41",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-11",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 60
+            },
+            {
+              "exerciseId": "ex-13",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 60
+            }
+          ]
+        },
+        {
+          "id": "arnold-3",
+          "label": "Day 3",
+          "name": "Legs A",
+          "musclesFocus": [
+            "Legs"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-4",
+              "sets": 4,
+              "reps": "6",
+              "restSeconds": 180
+            },
+            {
+              "exerciseId": "ex-5",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 150
+            },
+            {
+              "exerciseId": "ex-25",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-6",
+              "sets": 3,
+              "reps": "15",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-26",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-29",
+              "sets": 4,
+              "reps": "15",
+              "restSeconds": 60
+            }
+          ]
+        },
+        {
+          "id": "arnold-4",
+          "label": "Day 4",
+          "name": "Chest & Back B",
+          "musclesFocus": [
+            "Chest",
+            "Back"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-16",
+              "sets": 4,
+              "reps": "8",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-20",
+              "sets": 4,
+              "reps": "8",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-15",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-8",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-17",
+              "sets": 3,
+              "reps": "15",
+              "restSeconds": 60
+            },
+            {
+              "exerciseId": "ex-22",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 60
+            }
+          ]
+        },
+        {
+          "id": "arnold-5",
+          "label": "Day 5",
+          "name": "Shoulders & Arms B",
+          "musclesFocus": [
+            "Shoulders",
+            "Arms"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-30",
+              "sets": 4,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-35",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-31",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-40",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-33",
+              "sets": 3,
+              "reps": "15",
+              "restSeconds": 60
+            },
+            {
+              "exerciseId": "ex-42",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 60
+            }
+          ]
+        },
+        {
+          "id": "arnold-6",
+          "label": "Day 6",
+          "name": "Legs B",
+          "musclesFocus": [
+            "Legs"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-24",
+              "sets": 4,
+              "reps": "6",
+              "restSeconds": 180
+            },
+            {
+              "exerciseId": "ex-47",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-27",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-28",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-26",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-29",
+              "sets": 4,
+              "reps": "20",
+              "restSeconds": 60
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prog-3",
+      "name": "Classic Bro Split",
+      "shortName": "Bro",
+      "split": "Bro Split",
+      "description": "One muscle group per day, maximum volume per session. Great for isolation focus and beginners learning the mind-muscle connection. Each muscle gets a full week of recovery.",
+      "frequency": "5 days/week",
+      "difficulty": "Beginner",
+      "goal": "Hypertrophy",
+      "days": [
+        {
+          "id": "bro-1",
+          "label": "Monday",
+          "name": "Chest Day",
+          "musclesFocus": [
+            "Chest"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-1",
+              "sets": 5,
+              "reps": "5",
+              "restSeconds": 180
+            },
+            {
+              "exerciseId": "ex-2",
+              "sets": 4,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-16",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-3",
+              "sets": 3,
+              "reps": "15",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-18",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            }
+          ]
+        },
+        {
+          "id": "bro-2",
+          "label": "Tuesday",
+          "name": "Back Day",
+          "musclesFocus": [
+            "Back"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-7",
+              "sets": 4,
+              "reps": "5",
+              "restSeconds": 180
+            },
+            {
+              "exerciseId": "ex-19",
+              "sets": 4,
+              "reps": "8",
+              "restSeconds": 150
+            },
+            {
+              "exerciseId": "ex-21",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-8",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-9",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-22",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 90
+            }
+          ]
+        },
+        {
+          "id": "bro-3",
+          "label": "Wednesday",
+          "name": "Shoulder Day",
+          "musclesFocus": [
+            "Shoulders"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-10",
+              "sets": 4,
+              "reps": "8",
+              "restSeconds": 150
+            },
+            {
+              "exerciseId": "ex-30",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-11",
+              "sets": 4,
+              "reps": "15",
+              "restSeconds": 60
+            },
+            {
+              "exerciseId": "ex-31",
+              "sets": 3,
+              "reps": "15",
+              "restSeconds": 60
+            },
+            {
+              "exerciseId": "ex-32",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-33",
+              "sets": 3,
+              "reps": "15",
+              "restSeconds": 60
+            }
+          ]
+        },
+        {
+          "id": "bro-4",
+          "label": "Thursday",
+          "name": "Arm Day",
+          "musclesFocus": [
+            "Arms"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-12",
+              "sets": 4,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-41",
+              "sets": 4,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-35",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-40",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-36",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 60
+            },
+            {
+              "exerciseId": "ex-13",
+              "sets": 3,
+              "reps": "15",
+              "restSeconds": 60
+            }
+          ]
+        },
+        {
+          "id": "bro-5",
+          "label": "Friday",
+          "name": "Leg Day",
+          "musclesFocus": [
+            "Legs"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-4",
+              "sets": 5,
+              "reps": "5",
+              "restSeconds": 180
+            },
+            {
+              "exerciseId": "ex-5",
+              "sets": 4,
+              "reps": "8",
+              "restSeconds": 150
+            },
+            {
+              "exerciseId": "ex-25",
+              "sets": 4,
+              "reps": "12",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-27",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-6",
+              "sets": 3,
+              "reps": "15",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-26",
+              "sets": 3,
+              "reps": "15",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-29",
+              "sets": 5,
+              "reps": "15",
+              "restSeconds": 60
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prog-4",
+      "name": "Stronglifts 5×5",
+      "shortName": "5×5",
+      "split": "Stronglifts 5×5",
+      "description": "The ultimate beginner strength program. Only 5 compound lifts, done 3 days a week. Add 2.5 kg every session. Simple, proven, and brutally effective for building a strength foundation.",
+      "frequency": "3 days/week",
+      "difficulty": "Beginner",
+      "goal": "Strength",
+      "days": [
+        {
+          "id": "sl-1",
+          "label": "Workout A",
+          "name": "Workout A — Squat, Bench, Row",
+          "musclesFocus": [
+            "Legs",
+            "Chest",
+            "Back"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-4",
+              "sets": 5,
+              "reps": "5",
+              "restSeconds": 180,
+              "notes": "Add 2.5 kg each session"
+            },
+            {
+              "exerciseId": "ex-1",
+              "sets": 5,
+              "reps": "5",
+              "restSeconds": 180,
+              "notes": "Add 2.5 kg each session"
+            },
+            {
+              "exerciseId": "ex-19",
+              "sets": 5,
+              "reps": "5",
+              "restSeconds": 180,
+              "notes": "Add 2.5 kg each session"
+            }
+          ]
+        },
+        {
+          "id": "sl-2",
+          "label": "Workout B",
+          "name": "Workout B — Squat, OHP, Deadlift",
+          "musclesFocus": [
+            "Legs",
+            "Shoulders",
+            "Back"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-4",
+              "sets": 5,
+              "reps": "5",
+              "restSeconds": 180,
+              "notes": "Add 2.5 kg each session"
+            },
+            {
+              "exerciseId": "ex-10",
+              "sets": 5,
+              "reps": "5",
+              "restSeconds": 180,
+              "notes": "Add 2.5 kg each session"
+            },
+            {
+              "exerciseId": "ex-7",
+              "sets": 1,
+              "reps": "5",
+              "restSeconds": 180,
+              "notes": "One all-out set. Add 5 kg each session"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prog-5",
+      "name": "Upper / Lower Split",
+      "shortName": "U/L",
+      "split": "Upper/Lower",
+      "description": "Train each muscle twice a week with dedicated upper and lower sessions. Day A is strength focused (lower reps), Day B is hypertrophy focused (higher reps). Great for intermediate lifters.",
+      "frequency": "4 days/week",
+      "difficulty": "Intermediate",
+      "goal": "Strength",
+      "days": [
+        {
+          "id": "ul-1",
+          "label": "Upper A",
+          "name": "Upper — Strength Focus",
+          "musclesFocus": [
+            "Chest",
+            "Back",
+            "Shoulders",
+            "Arms"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-1",
+              "sets": 4,
+              "reps": "5",
+              "restSeconds": 180
+            },
+            {
+              "exerciseId": "ex-19",
+              "sets": 4,
+              "reps": "5",
+              "restSeconds": 180
+            },
+            {
+              "exerciseId": "ex-10",
+              "sets": 3,
+              "reps": "8",
+              "restSeconds": 150
+            },
+            {
+              "exerciseId": "ex-21",
+              "sets": 3,
+              "reps": "8",
+              "restSeconds": 150
+            },
+            {
+              "exerciseId": "ex-35",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-39",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 90
+            }
+          ]
+        },
+        {
+          "id": "ul-2",
+          "label": "Lower A",
+          "name": "Lower — Strength Focus",
+          "musclesFocus": [
+            "Legs"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-4",
+              "sets": 4,
+              "reps": "5",
+              "restSeconds": 180
+            },
+            {
+              "exerciseId": "ex-5",
+              "sets": 4,
+              "reps": "6",
+              "restSeconds": 180
+            },
+            {
+              "exerciseId": "ex-25",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-26",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-29",
+              "sets": 4,
+              "reps": "15",
+              "restSeconds": 60
+            }
+          ]
+        },
+        {
+          "id": "ul-3",
+          "label": "Upper B",
+          "name": "Upper — Hypertrophy Focus",
+          "musclesFocus": [
+            "Chest",
+            "Back",
+            "Shoulders",
+            "Arms"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-2",
+              "sets": 4,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-20",
+              "sets": 4,
+              "reps": "10",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-30",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-8",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-36",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 60
+            },
+            {
+              "exerciseId": "ex-42",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 60
+            }
+          ]
+        },
+        {
+          "id": "ul-4",
+          "label": "Lower B",
+          "name": "Lower — Hypertrophy Focus",
+          "musclesFocus": [
+            "Legs"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-24",
+              "sets": 4,
+              "reps": "8",
+              "restSeconds": 150
+            },
+            {
+              "exerciseId": "ex-47",
+              "sets": 4,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-27",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-6",
+              "sets": 3,
+              "reps": "15",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-26",
+              "sets": 3,
+              "reps": "15",
+              "restSeconds": 90
+            },
+            {
+              "exerciseId": "ex-29",
+              "sets": 4,
+              "reps": "20",
+              "restSeconds": 60
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prog-6",
+      "name": "Full Body 3×Week",
+      "shortName": "FB3",
+      "split": "Full Body",
+      "description": "Hit every major muscle group 3 times per week. Perfect for beginners and intermediate lifters who want frequent practice on movement patterns and rapid strength gains.",
+      "frequency": "3 days/week",
+      "difficulty": "Beginner",
+      "goal": "General Fitness",
+      "days": [
+        {
+          "id": "fb-1",
+          "label": "Day A",
+          "name": "Full Body A — Squat Focus",
+          "musclesFocus": [
+            "Legs",
+            "Chest",
+            "Back",
+            "Shoulders"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-4",
+              "sets": 3,
+              "reps": "5",
+              "restSeconds": 180
+            },
+            {
+              "exerciseId": "ex-1",
+              "sets": 3,
+              "reps": "5",
+              "restSeconds": 150
+            },
+            {
+              "exerciseId": "ex-19",
+              "sets": 3,
+              "reps": "5",
+              "restSeconds": 150
+            },
+            {
+              "exerciseId": "ex-10",
+              "sets": 3,
+              "reps": "8",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-21",
+              "sets": 3,
+              "reps": "8",
+              "restSeconds": 120
+            }
+          ]
+        },
+        {
+          "id": "fb-2",
+          "label": "Day B",
+          "name": "Full Body B — Deadlift Focus",
+          "musclesFocus": [
+            "Back",
+            "Legs",
+            "Chest",
+            "Arms"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-24",
+              "sets": 3,
+              "reps": "5",
+              "restSeconds": 180
+            },
+            {
+              "exerciseId": "ex-7",
+              "sets": 3,
+              "reps": "5",
+              "restSeconds": 180
+            },
+            {
+              "exerciseId": "ex-2",
+              "sets": 3,
+              "reps": "8",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-8",
+              "sets": 3,
+              "reps": "8",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-11",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            }
+          ]
+        },
+        {
+          "id": "fb-3",
+          "label": "Day C",
+          "name": "Full Body C — Volume Focus",
+          "musclesFocus": [
+            "Legs",
+            "Chest",
+            "Back",
+            "Arms"
+          ],
+          "exercises": [
+            {
+              "exerciseId": "ex-4",
+              "sets": 3,
+              "reps": "8",
+              "restSeconds": 150
+            },
+            {
+              "exerciseId": "ex-47",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-15",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-21",
+              "sets": 3,
+              "reps": "10",
+              "restSeconds": 120
+            },
+            {
+              "exerciseId": "ex-32",
+              "sets": 3,
+              "reps": "12",
+              "restSeconds": 90
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

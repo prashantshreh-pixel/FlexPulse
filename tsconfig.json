@@ -22,5 +22,11 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
-  }
+  },
+  "exclude": [
+    "backend",
+    "legacy_django",
+    "env",
+    "legacy_env"
+  ]
 }

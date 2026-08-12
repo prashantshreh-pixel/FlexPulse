@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ViewTab, WorkoutSession, Exercise, PersonalRecord, SetLogItem, WorkoutProgram, WorkoutDay, WeightUnit, toStorageLbs } from './types';
-import { INITIAL_EXERCISES, INITIAL_PROGRAMS, INITIAL_PRS, INITIAL_WORKOUT } from './data/initialData';
+import { INITIAL_PRS, INITIAL_WORKOUT } from './data/initialData';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { PrModal } from './components/PrModal';
+import { AuthScreen } from './components/AuthScreen';
 
 const Dashboard = React.lazy(() => import('./components/Dashboard').then(module => ({ default: module.Dashboard })));
 const LiveWorkout = React.lazy(() => import('./components/LiveWorkout').then(module => ({ default: module.LiveWorkout })));
@@ -15,6 +16,9 @@ export default function App() {
   const [weightUnit, setWeightUnit] = useState<WeightUnit>(() => {
     return (localStorage.getItem('flexpulse_unit') as WeightUnit) || 'lbs';
   });
+
+  const [token, setToken] = useState<string | null>(localStorage.getItem('flexpulse_token'));
+  const [username, setUsername] = useState<string | null>(localStorage.getItem('flexpulse_username'));
 
   const [session, setSession] = useState<WorkoutSession>(() => {
     try {
@@ -31,17 +35,104 @@ export default function App() {
     return { ...INITIAL_WORKOUT, id: `session-${Date.now()}` };
   });
 
-  const [exercises, setExercises] = useState<Exercise[]>(INITIAL_EXERCISES);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [programs, setPrograms] = useState<WorkoutProgram[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
-  const [programs, setPrograms] = useState<WorkoutProgram[]>(() => {
-    try {
-      const saved = localStorage.getItem('flexpulse_custom_programs');
-      const custom: WorkoutProgram[] = saved ? JSON.parse(saved) : [];
-      return [...INITIAL_PROGRAMS, ...custom];
-    } catch {
-      return [...INITIAL_PROGRAMS];
+  // Fetch static data from Django API
+  useEffect(() => {
+    async function fetchData() {
+      setIsLoadingData(true);
+      try {
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const [exRes, rtRes, prRes] = await Promise.all([
+          fetch('http://127.0.0.1:8000/api/exercises/', { headers }),
+          fetch('http://127.0.0.1:8000/api/routines/', { headers }),
+          token ? fetch('http://127.0.0.1:8000/api/prs/', { headers }) : Promise.resolve(null)
+        ]);
+        
+        if (!exRes.ok || !rtRes.ok) throw new Error("API response not ok");
+
+        const exData = await exRes.json();
+        const rtData = await rtRes.json();
+        const prData = prRes && prRes.ok ? await prRes.json() : [];
+
+        const mappedPrs: PersonalRecord[] = prData.map((pr: any) => ({
+          id: `pr-${pr.id}`,
+          exerciseName: pr.exercise_name,
+          muscleGroup: pr.muscle_group,
+          weightLbs: parseFloat(pr.weight_lbs),
+          reps: pr.reps,
+          estimated1RM: Math.round(parseFloat(pr.weight_lbs) * (1 + pr.reps / 30)),
+          achievedAt: pr.logged_at,
+        }));
+        setPrs(mappedPrs.length > 0 ? mappedPrs : INITIAL_PRS);
+
+        const mappedExercises: Exercise[] = exData.map((e: any) => ({
+          id: `ex-${e.id}`, // match legacy format
+          name: e.name,
+          muscleGroup: e.muscle_group,
+          equipment: e.equipment,
+          category: e.category,
+          instructions: e.instructions || '',
+          isCustom: e.is_custom
+        }));
+        
+        const mappedPrograms: WorkoutProgram[] = rtData.map((r: any) => {
+          let chunkSize = 6;
+          if (r.name.includes("Stronglifts")) chunkSize = 3;
+          else if (r.name.includes("3")) chunkSize = 5;
+          
+          const days = [];
+          for (let i = 0; i < r.exercises.length; i += chunkSize) {
+            const chunk = r.exercises.slice(i, i + chunkSize);
+            days.push({
+              id: `day-${r.id}-${i/chunkSize + 1}`,
+              label: `Day ${i/chunkSize + 1}`,
+              name: `Workout ${i/chunkSize + 1}`,
+              musclesFocus: [],
+              exercises: chunk.map((re: any) => ({
+                exerciseId: `ex-${re.exercise.id}`,
+                sets: re.target_sets,
+                reps: String(re.target_reps),
+                restSeconds: 90,
+                notes: re.notes || ''
+              }))
+            });
+          }
+
+          return {
+            id: `prog-${r.id}`,
+            name: r.name,
+            shortName: r.name.substring(0, 4).toUpperCase(),
+            split: 'Custom',
+            description: r.description || '',
+            frequency: 'Varies',
+            difficulty: 'Intermediate',
+            goal: 'General Fitness',
+            days: days
+          };
+        });
+
+        setExercises(mappedExercises);
+
+        // Merge custom localStorage programs with DB templates
+        const savedCustom = localStorage.getItem('flexpulse_custom_programs');
+        const customPrograms: WorkoutProgram[] = savedCustom ? JSON.parse(savedCustom) : [];
+        setPrograms([...mappedPrograms, ...customPrograms]);
+
+      } catch (err) {
+        console.error("Failed to fetch data from Django API:", err);
+      } finally {
+        setIsLoadingData(false);
+      }
     }
-  });
+    fetchData();
+  }, [token]);
 
   const [prs, setPrs] = useState<PersonalRecord[]>(INITIAL_PRS);
   const [timerTriggerKey, setTimerTriggerKey] = useState<number>(0);
@@ -176,7 +267,40 @@ export default function App() {
     }
   };
 
-  const handleFinishWorkout = () => {
+  const handleFinishWorkout = async () => {
+    // Construct payload matching WorkoutLogSerializer
+    const payload = {
+      title: session.title,
+      started_at: session.startedAt,
+      completed_at: new Date().toISOString(),
+      duration_seconds: session.durationSeconds,
+      status: 'COMPLETED',
+      sets: session.exerciseGroups.flatMap(group => 
+        group.sets.map(setLog => ({
+          exercise_id: parseInt(group.exerciseId.replace('ex-', '')),
+          set_number: setLog.setNumber,
+          weight_lbs: setLog.weightLbs,
+          reps: setLog.reps,
+          rpe: setLog.rpe
+        }))
+      )
+    };
+
+    if (token) {
+      try {
+        await fetch('http://127.0.0.1:8000/api/workouts/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.error("Failed to save workout to DB", err);
+      }
+    }
+
     setSession(prev => ({ ...prev, status: 'COMPLETED' }));
     setWorkoutComplete(true);
   };
@@ -186,9 +310,38 @@ export default function App() {
     setWorkoutComplete(false);
   };
 
+  const handleLogout = () => {
+    setToken(null);
+    setUsername(null);
+    localStorage.removeItem('flexpulse_token');
+    localStorage.removeItem('flexpulse_username');
+    // Clear session so the new user doesn't see the old user's workout
+    setSession({ ...INITIAL_WORKOUT, id: `session-${Date.now()}` });
+    localStorage.removeItem('flexpulse_session');
+    setWorkoutComplete(false);
+  };
+
+  if (!token) {
+    return (
+      <AuthScreen 
+        onAuthSuccess={(newToken, newUsername) => {
+          setToken(newToken);
+          setUsername(newUsername);
+          localStorage.setItem('flexpulse_token', newToken);
+          localStorage.setItem('flexpulse_username', newUsername);
+        }} 
+      />
+    );
+  }
+
   return (
-    <div className="h-full bg-[#F8F7F4] text-[#111113] flex flex-col md:flex-row overflow-hidden font-sans">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+    <div className="h-[100dvh] bg-[#F8F7F4] text-[#111113] flex flex-col md:flex-row overflow-hidden font-sans">
+      <Sidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        username={username || 'Athlete'}
+        onLogout={handleLogout}
+      />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Header
@@ -200,39 +353,46 @@ export default function App() {
         />
 
         <main id="main-content" className="flex-1 overflow-y-auto p-6 md:p-10 dot-bg">
-          <React.Suspense fallback={<div className="flex items-center justify-center h-full font-mono text-sm uppercase text-[#1a1a1a]/50">Loading...</div>}>
-            {activeTab === 'dashboard' && (
-              <Dashboard session={session} prs={prs} setActiveTab={setActiveTab} weightUnit={weightUnit} />
-            )}
-            {activeTab === 'live_workout' && (
-              <LiveWorkout
-                session={session}
-                exercises={exercises}
-                weightUnit={weightUnit}
-                workoutComplete={workoutComplete}
-                onLogSet={handleLogSet}
-                onAddExerciseToSession={handleAddExerciseToSession}
-                onFinishWorkout={handleFinishWorkout}
-                onGoToRoutines={() => setActiveTab('routines')}
-                onResetWorkout={handleResetWorkout}
-              />
-            )}
-            {activeTab === 'exercises' && (
-              <ExerciseLibrary
-                exercises={exercises}
-                weightUnit={weightUnit}
-                onAddExercise={handleAddExerciseToSession}
-              />
-            )}
-            {activeTab === 'routines' && (
-              <Routines
-                programs={programs}
-                exercises={exercises}
-                onStartDay={handleStartDay}
-                onSaveCustomProgram={handleSaveCustomProgram}
-              />
-            )}
-          </React.Suspense>
+          {isLoadingData ? (
+            <div className="flex items-center justify-center h-full font-mono text-sm uppercase text-[#1a1a1a]/50 flex-col gap-4">
+              <div className="w-8 h-8 border-4 border-[#ff4d00] border-t-transparent rounded-full animate-spin"></div>
+              Loading Data from Server...
+            </div>
+          ) : (
+            <React.Suspense fallback={<div className="flex items-center justify-center h-full font-mono text-sm uppercase text-[#1a1a1a]/50">Loading Module...</div>}>
+              {activeTab === 'dashboard' && (
+                <Dashboard session={session} prs={prs} setActiveTab={setActiveTab} weightUnit={weightUnit} />
+              )}
+              {activeTab === 'live_workout' && (
+                <LiveWorkout
+                  session={session}
+                  exercises={exercises}
+                  weightUnit={weightUnit}
+                  workoutComplete={workoutComplete}
+                  onLogSet={handleLogSet}
+                  onAddExerciseToSession={handleAddExerciseToSession}
+                  onFinishWorkout={handleFinishWorkout}
+                  onGoToRoutines={() => setActiveTab('routines')}
+                  onResetWorkout={handleResetWorkout}
+                />
+              )}
+              {activeTab === 'exercises' && (
+                <ExerciseLibrary
+                  exercises={exercises}
+                  weightUnit={weightUnit}
+                  onAddExercise={handleAddExerciseToSession}
+                />
+              )}
+              {activeTab === 'routines' && (
+                <Routines
+                  programs={programs}
+                  exercises={exercises}
+                  onStartDay={handleStartDay}
+                  onSaveCustomProgram={handleSaveCustomProgram}
+                />
+              )}
+            </React.Suspense>
+          )}
         </main>
       </div>
 
