@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" class="dark h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlexPulse - Gym & Workout Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HTMX CDN -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!-- Alpine.js CDN -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            accent: '#06b6d4'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="h-full font-sans antialiased bg-slate-950 text-slate-100 flex flex-col md:flex-row overflow-hidden"
+      x-data="globalApp()"
+      @start-rest-timer.window="startRestTimer($event.detail)"
+      @show-pr-badge.window="triggerPrModal($event.detail)">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="w-full md:w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0">
+        <div>
+            <!-- BRAND LOGO -->
+            <div class="h-16 flex items-center px-6 border-b border-slate-800 justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center font-bold text-slate-950 text-xl shadow-lg shadow-emerald-500/20">
+                        ⚡
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">FlexPulse</h1>
+                        <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Workout OS</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NAV LINKS (HTMX Partial Swaps target="#main-content") -->
+            <nav class="p-4 space-y-1">
+                <a href="/dashboard/"
+                   hx-get="/dashboard/"
+                   hx-target="#main-content"
+                   hx-push-url="true"
+                   @click="activeTab = 'dashboard'"
+                   :class="activeTab === 'dashboard' ? 'bg-emerald-500/10 text-emerald-400 border-r-2 border-emerald-500 font-medium' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    Dashboard
+                </a>
+
+                <a href="/live-workout/"
+                   hx-get="/live-workout/"
+                   hx-target="#main-content"
+                   hx-push-url="true"
+                   @click="activeTab = 'live_workout'"
+                   :class="activeTab === 'live_workout' ? 'bg-emerald-500/10 text-emerald-400 border-r-2 border-emerald-500 font-medium' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all relative">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    Live Workout
+                    <span class="ml-auto w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                </a>
+
+                <a href="/exercises/"
+                   hx-get="/exercises/"
+                   hx-target="#main-content"
+                   hx-push-url="true"
+                   @click="activeTab = 'exercises'"
+                   :class="activeTab === 'exercises' ? 'bg-emerald-500/10 text-emerald-400 border-r-2 border-emerald-500 font-medium' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    Exercise Library
+                </a>
+
+                <a href="/routines/"
+                   hx-get="/routines/"
+                   hx-target="#main-content"
+                   hx-push-url="true"
+                   @click="activeTab = 'routines'"
+                   :class="activeTab === 'routines' ? 'bg-emerald-500/10 text-emerald-400 border-r-2 border-emerald-500 font-medium' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    Routines & PPL
+                </a>
+
+                <a href="/history/"
+                   hx-get="/history/"
+                   hx-target="#main-content"
+                   hx-push-url="true"
+                   @click="activeTab = 'history'"
+                   :class="activeTab === 'history' ? 'bg-emerald-500/10 text-emerald-400 border-r-2 border-emerald-500 font-medium' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'"
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    History & PRs
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-slate-800 text-xs text-slate-500 flex justify-between items-center">
+            <span>SSMS T-SQL Ready</span>
+            <span class="px-2 py-0.5 rounded bg-slate-800 text-emerald-400 font-mono text-[10px]">v1.0</span>
+        </div>
+    </aside>
+
+    <!-- MAIN BODY AREA -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        
+        <!-- GLOBAL HEADER WITH ALPINE.JS PERSISTENT REST TIMER -->
+        <header class="h-16 bg-slate-900 border-b border-slate-800 px-6 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-4">
+                <h2 class="text-sm font-semibold text-slate-300">Active Session: <span class="text-emerald-400 font-mono">Push Hypertrophy</span></h2>
+            </div>
+
+            <!-- PERSISTENT ALPINE.JS REST TIMER COMPONENT -->
+            <div class="flex items-center gap-3 bg-slate-950 border border-slate-800 px-4 py-1.5 rounded-full shadow-inner"
+                 x-data="restTimerComponent()">
+                <div class="flex items-center gap-2">
+                    <span class="relative flex h-3 w-3">
+                      <span :class="timerRunning ? 'animate-ping opacity-75' : ''" class="absolute inline-flex h-full w-full rounded-full bg-emerald-400"></span>
+                      <span class="relative inline-flex rounded-full h-3 w-3" :class="timerRunning ? 'bg-emerald-500' : 'bg-slate-600'"></span>
+                    </span>
+                    <span class="text-xs font-mono font-bold text-slate-300" x-text="formatTime(secondsLeft)">01:30</span>
+                </div>
+
+                <div class="flex items-center gap-1 border-l border-slate-800 pl-3">
+                    <button @click="toggleTimer()" class="p-1 text-slate-400 hover:text-emerald-400 rounded transition">
+                        <template x-if="!timerRunning">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+                        </template>
+                        <template x-if="timerRunning">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5 0a1 1 0 012 0v4a1 1 0 11-2 0V8z" clip-rule="evenodd"/></svg>
+                        </template>
+                    </button>
+                    <button @click="addSeconds(30)" class="text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded transition">
+                        +30s
+                    </button>
+                    <button @click="resetTimer(90)" class="p-1 text-slate-500 hover:text-slate-300 rounded transition">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN HTMX CONTENT SWAP CONTAINER -->
+        <main id="main-content" class="flex-1 overflow-y-auto p-6">
+            {% include partial|default:"partials/live_workout.html" %}
+        </main>
+    </div>
+
+    <!-- PR CONGRATULATIONS MODAL -->
+    <div x-show="prModalOpen"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-90"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-90"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+         style="display: none;">
+        <div class="bg-slate-900 border border-amber-500/30 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl shadow-amber-500/10 relative overflow-hidden">
+            <div class="absolute -top-12 -left-12 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
+            <div class="w-16 h-16 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner border border-amber-500/40 animate-bounce">
+                🏆
+            </div>
+            <h3 class="text-2xl font-black text-amber-400 uppercase tracking-tight">New Personal Record!</h3>
+            <p class="text-sm text-slate-400 mt-1" x-text="prDetails.exercise"></p>
+            
+            <div class="my-4 p-4 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-center gap-3">
+                <span class="text-3xl font-black text-slate-100" x-text="prDetails.weight + ' lbs'"></span>
+                <span class="text-sm font-semibold text-emerald-400" x-text="'× ' + prDetails.reps + ' reps'"></span>
+            </div>
+
+            <button @click="prModalOpen = false" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold hover:brightness-110 transition shadow-lg shadow-amber-500/20">
+                Keep Crushing It ⚡
+            </button>
+        </div>
+    </div>
+
+    <!-- ALPINE.JS LOGIC -->
+    <script>
+        function globalApp() {
+            return {
+                activeTab: 'live_workout',
+                prModalOpen: false,
+                prDetails: { exercise: '', weight: 0, reps: 0 },
+                triggerPrModal(detail) {
+                    this.prDetails = detail;
+                    this.prModalOpen = true;
+                }
+            }
+        }
+
+        function restTimerComponent() {
+            return {
+                secondsLeft: 90,
+                timerRunning: false,
+                timerInterval: null,
+                formatTime(sec) {
+                    const m = Math.floor(sec / 60).toString().padStart(2, '0');
+                    const s = (sec % 60).toString().padStart(2, '0');
+                    return `${m}:${s}`;
+                },
+                startRestTimer(detail) {
+                    this.resetTimer(detail.duration || 90);
+                    this.timerRunning = true;
+                    this.run();
+                },
+                toggleTimer() {
+                    this.timerRunning = !this.timerRunning;
+                    if (this.timerRunning) this.run();
+                    else clearInterval(this.timerInterval);
+                },
+                run() {
+                    clearInterval(this.timerInterval);
+                    this.timerInterval = setInterval(() => {
+                        if (this.secondsLeft > 0) {
+                            this.secondsLeft--;
+                        } else {
+                            this.timerRunning = false;
+                            clearInterval(this.timerInterval);
+                            // Beep Sound
+                            this.playBeep();
+                        }
+                    }, 1000);
+                },
+                addSeconds(sec) {
+                    this.secondsLeft += sec;
+                },
+                resetTimer(sec) {
+                    clearInterval(this.timerInterval);
+                    this.secondsLeft = sec;
+                    this.timerRunning = false;
+                },
+                playBeep() {
+                    try {
+                        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                        const osc = ctx.createOscillator();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(880, ctx.currentTime);
+                        osc.connect(ctx.destination);
+                        osc.start();
+                        osc.stop(ctx.currentTime + 0.3);
+                    } catch(e){}
+                }
+            }
+        }
+    </script>
+</body>
+</html>

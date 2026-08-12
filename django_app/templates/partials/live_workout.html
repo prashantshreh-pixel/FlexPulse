@@ -1,0 +1,121 @@
+<!-- LIVE WORKOUT INTERACTIVE LOGGING PANEL (HTMX Partial) -->
+<div class="space-y-6">
+    <!-- WORKOUT HEADER -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900 p-6 rounded-2xl border border-slate-800">
+        <div>
+            <div class="flex items-center gap-2 text-xs font-semibold text-emerald-400 uppercase tracking-wider">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                In Progress
+            </div>
+            <h2 class="text-2xl font-black text-slate-100 mt-1">Push Day A - Heavy Chest & Shoulders</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Started 24 mins ago • Target Volume: 14,500 lbs</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition">
+                Discard Session
+            </button>
+            <button class="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:brightness-110 text-slate-950 font-bold text-sm transition shadow-lg shadow-emerald-500/20 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Finish Workout
+            </button>
+        </div>
+    </div>
+
+    <!-- DYNAMIC EXERCISE SEARCH BAR (HTMX Keyup Search) -->
+    <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div class="relative w-full md:w-96">
+            <svg class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text"
+                   name="q"
+                   placeholder="Search exercise library..."
+                   hx-get="/exercises/search/"
+                   hx-trigger="keyup changed delay:200ms"
+                   hx-target="#exercise-search-results"
+                   class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition">
+        </div>
+
+        <!-- MUSCLE GROUP FILTER TAGS -->
+        <div class="flex gap-2 overflow-x-auto w-full md:w-auto text-xs font-medium">
+            <button class="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold">All</button>
+            <button class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-slate-200">Chest</button>
+            <button class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-slate-200">Back</button>
+            <button class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-slate-200">Legs</button>
+            <button class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-slate-200">Shoulders</button>
+            <button class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-slate-200">Arms</button>
+        </div>
+    </div>
+
+    <div id="exercise-search-results"></div>
+
+    <!-- EXERCISE SET LOGGING TABLES -->
+    <!-- 1. BARBELL BENCH PRESS -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+            <div class="flex items-center gap-3">
+                <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 font-bold text-xs uppercase border border-emerald-500/20">Chest</span>
+                <div>
+                    <h3 class="font-bold text-lg text-slate-100">Barbell Bench Press</h3>
+                    <p class="text-xs text-slate-400">Barbell • Primary Compound • Previous PR: 225 lbs × 5</p>
+                </div>
+            </div>
+            <button class="text-slate-500 hover:text-slate-300">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
+            </button>
+        </div>
+
+        <div class="p-4 overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead>
+                    <tr class="text-xs uppercase text-slate-400 border-b border-slate-800 pb-2">
+                        <th class="py-2 px-3 w-16">Set</th>
+                        <th class="py-2 px-3">Previous</th>
+                        <th class="py-2 px-3 w-32">Weight (lbs)</th>
+                        <th class="py-2 px-3 w-28">Reps</th>
+                        <th class="py-2 px-3 w-24">RPE</th>
+                        <th class="py-2 px-3 text-right">Log Set</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/50" id="bench-press-sets">
+                    <!-- COMPLETED SET ROW 1 -->
+                    <tr class="bg-emerald-500/5">
+                        <td class="py-3 px-3 font-bold text-slate-400">1</td>
+                        <td class="py-3 px-3 text-xs text-slate-500">225 lbs × 5</td>
+                        <td class="py-3 px-3 font-mono font-bold text-slate-200">225</td>
+                        <td class="py-3 px-3 font-mono font-bold text-slate-200">5</td>
+                        <td class="py-3 px-3 font-mono text-slate-400">8.0</td>
+                        <td class="py-3 px-3 text-right">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold text-xs">
+                                ✓ Logged
+                            </span>
+                        </td>
+                    </tr>
+
+                    <!-- INTERACTIVE FORM FOR SET 2 (HTMX POST) -->
+                    <tr class="hover:bg-slate-800/30">
+                        <td class="py-3 px-3 font-bold text-emerald-400">2</td>
+                        <td class="py-3 px-3 text-xs text-slate-500">225 lbs × 5</td>
+                        <td class="py-3 px-3">
+                            <input type="number" name="weight" value="230" class="w-24 bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-100 font-mono focus:border-emerald-500 focus:outline-none">
+                        </td>
+                        <td class="py-3 px-3">
+                            <input type="number" name="reps" value="5" class="w-20 bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-100 font-mono focus:border-emerald-500 focus:outline-none">
+                        </td>
+                        <td class="py-3 px-3">
+                            <input type="number" step="0.5" name="rpe" value="8.5" class="w-16 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-slate-100 font-mono text-xs focus:border-emerald-500 focus:outline-none">
+                        </td>
+                        <td class="py-3 px-3 text-right">
+                            <button hx-post="/log-set/"
+                                    hx-vals='{"workout_id": 101, "exercise_id": 1}'
+                                    hx-target="#bench-press-sets"
+                                    hx-swap="beforeend"
+                                    class="px-4 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs transition shadow-md shadow-emerald-500/20">
+                                Log Set ⚡
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,6 @@
+{
+  "name": "FlexPulse - Workout Tracker",
+  "description": "Gym & Workout Tracking Web Application with HTMX, Alpine.js, Tailwind CSS, Django backend models, and SSMS T-SQL schema integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

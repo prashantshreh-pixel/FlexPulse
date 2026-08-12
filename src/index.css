@@ -1,0 +1,188 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'Space Mono', monospace;
+  --font-display: 'Oswald', sans-serif;
+}
+
+:root {
+  --bg: #f8f7f4;
+  --ink: #1a1a1a;
+  --accent: #ff4d00;
+  --ink-faint: rgba(26, 26, 26, 0.08);
+  --ink-medium: rgba(26, 26, 26, 0.6);
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: 'Geist', sans-serif;
+}
+
+.font-oswald {
+  font-family: 'Oswald', sans-serif;
+}
+
+.mono, .font-mono {
+  font-family: 'Space Mono', monospace;
+}
+
+.nav-head, .label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-medium);
+  font-weight: 600;
+}
+
+.card-minimal {
+  background: #ffffff;
+  border: 2px solid var(--ink);
+  padding: 1.5rem;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.action-btn, .btn-minimal {
+  background: var(--bg);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  padding: 0.75rem 1.25rem;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 var(--ink);
+  transition: all 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.action-btn:hover, .btn-minimal:hover {
+  background: var(--ink-faint);
+}
+
+.action-btn:active, .btn-minimal:active {
+  box-shadow: 0 0 0 var(--ink);
+  transform: translate(4px, 4px);
+}
+
+.action-btn.primary, .btn-accent {
+  background: var(--accent);
+  color: #ffffff;
+  border: 2px solid var(--ink);
+  padding: 0.75rem 1.25rem;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 var(--ink);
+  transition: all 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.action-btn.primary:hover, .btn-accent:hover {
+  background: #e04400;
+}
+
+.action-btn.primary:active, .btn-accent:active {
+  box-shadow: 0 0 0 var(--ink);
+  transform: translate(4px, 4px);
+}
+
+.btn-outline-minimal {
+  background: transparent;
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  transition: all 0.1s ease;
+}
+
+.btn-outline-minimal:hover {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.input-minimal {
+  background: #ffffff;
+  border: 2px solid var(--ink);
+  padding: 0.5rem 0.75rem;
+  font-family: 'Space Mono', monospace;
+  color: var(--ink);
+  font-size: 0.85rem;
+  transition: all 0.15s ease;
+}
+
+.input-minimal:focus {
+  outline: none;
+  background: #ffffff;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.dot-bg {
+  background-image: radial-gradient(var(--ink-faint) 1px, transparent 0);
+  background-size: 32px 32px;
+}
+
+/* ── Exercise animations ───────────────────────────────────────────────── */
+@keyframes ex-push {
+  0%, 100% { transform: translateX(0); }
+  50%       { transform: translateX(-22px); }
+}
+@keyframes ex-pull {
+  0%, 100% { transform: translateX(0); }
+  50%       { transform: translateX(22px); }
+}
+@keyframes ex-squat {
+  0%, 100% { transform: scaleY(1) translateY(0); }
+  50%       { transform: scaleY(0.72) translateY(10px); }
+}
+@keyframes ex-press {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-22px); }
+}
+@keyframes ex-curl {
+  0%, 100% { transform: rotate(0deg); }
+  50%       { transform: rotate(70deg); }
+}
+@keyframes ex-crunch {
+  0%, 100% { transform: scaleY(1); }
+  50%       { transform: scaleY(0.75); }
+}
+@keyframes ex-deadlift {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50%       { transform: translateY(-18px) scaleY(1.05); }
+}
+
+/* ── Workout complete toast ────────────────────────────────────────────── */
+@keyframes slide-in-right {
+  from { transform: translateX(110%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes fade-in-up {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes confetti-fall {
+  0%   { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(60px) rotate(360deg); opacity: 0; }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 77, 0, 0); }
+  50%       { box-shadow: 0 0 0 8px rgba(255, 77, 0, 0.15); }
+}
+
+.slide-in-right { animation: slide-in-right 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+.fade-in-up     { animation: fade-in-up 0.5s ease forwards; }
+.pulse-glow     { animation: pulse-glow 2s ease infinite; }
