@@ -74,7 +74,7 @@ export const Profile: React.FC<ProfileProps> = ({
     async function getProfile() {
       if (!token) return;
       try {
-        const res = await fetch('http://127.0.0.1:8000/api/profile/', {
+        const res = await fetch('/api/profile/', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -164,7 +164,7 @@ export const Profile: React.FC<ProfileProps> = ({
         payload.password = profileData.password;
       }
 
-      const res = await fetch('http://127.0.0.1:8000/api/profile/', {
+      const res = await fetch('/api/profile/', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
