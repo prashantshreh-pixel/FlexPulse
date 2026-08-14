@@ -35,10 +35,10 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, wei
     return matchSearch && matchMuscle && matchCategory;
   });
 
-  const grouped = filtered.reduce<Record<string, Exercise[]>>((acc, ex) => {
+  const grouped = filtered.reduce((acc, ex) => {
     (acc[ex.muscleGroup] ??= []).push(ex);
     return acc;
-  }, {});
+  }, {} as Record<string, Exercise[]>);
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
@@ -88,7 +88,8 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, wei
       </div>
 
       {/* Exercise grid — grouped by muscle */}
-      {Object.entries(grouped).map(([muscleGroup, exList]) => {
+      {Object.entries(grouped).map(([muscleGroup, exListRaw]) => {
+        const exList = exListRaw as Exercise[];
         const color = MUSCLE_COLORS[muscleGroup as MuscleGroup] || '#1a1a1a';
         return (
           <div key={muscleGroup} className="space-y-3">
@@ -128,18 +129,12 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, wei
                     </p>
 
                     {/* Actions */}
-                    <div className="flex gap-2 pt-1 border-t border-[#1a1a1a]/10">
+                    <div className="pt-1 border-t border-[#1a1a1a]/10 flex justify-center">
                       <button
                         onClick={e => { e.stopPropagation(); setDetailExercise(ex); }}
-                        className="flex items-center gap-1 font-mono text-[0.6rem] uppercase font-bold text-[#1a1a1a]/60 hover:text-[#ff4d00] transition cursor-pointer"
+                        className="w-full flex items-center justify-center gap-1.5 font-mono text-[0.6rem] uppercase font-bold bg-[#1a1a1a] text-[#f8f7f4] py-1.5 hover:bg-[#ff4d00] transition cursor-pointer"
                       >
-                        <Info className="w-3 h-3" /> Details
-                      </button>
-                      <button
-                        onClick={e => { e.stopPropagation(); onAddExercise(ex); }}
-                        className="ml-auto flex items-center gap-1 font-mono text-[0.6rem] uppercase font-bold bg-[#1a1a1a] text-[#f8f7f4] px-2 py-1 hover:bg-[#ff4d00] transition cursor-pointer"
-                      >
-                        <Plus className="w-3 h-3" /> Add
+                        <Info className="w-3.5 h-3.5" /> View Details
                       </button>
                     </div>
                   </div>
@@ -162,6 +157,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, wei
         isOpen={detailExercise !== null}
         onClose={() => setDetailExercise(null)}
         onAdd={onAddExercise}
+        readOnly={true}
       />
     </div>
   );

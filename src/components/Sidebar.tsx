@@ -1,6 +1,6 @@
 import React from 'react';
 import { ViewTab } from '../types';
-import { LayoutDashboard, Dumbbell, BookOpen, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, BookOpen, ClipboardList, User } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: ViewTab;
@@ -15,6 +15,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, usern
     { id: 'live_workout', label: 'Today',     icon: Dumbbell,     badge: '●' },
     { id: 'exercises',   label: 'Exercises', icon: BookOpen },
     { id: 'routines',    label: 'Routines',  icon: ClipboardList },
+    { id: 'profile',     label: 'Profile',   icon: User },
   ];
 
   return (
@@ -47,17 +48,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, usern
         })}
       </nav>
 
-      <div className="mt-8 pt-4 border-t border-[#1a1a1a]/10">
+      <div className="mt-auto pt-4 border-t border-[#1a1a1a]/10">
         <div className="flex items-center justify-between mb-2">
-          <div className="font-mono text-[0.75rem] font-bold uppercase text-[#1a1a1a] truncate">
-            {username}
-          </div>
           <button 
-            onClick={onLogout}
-            className="text-[0.6rem] font-mono font-bold uppercase text-[#ff4d00] hover:underline cursor-pointer"
+            onClick={() => setActiveTab('profile')}
+            className="font-mono text-[0.75rem] font-bold uppercase text-[#1a1a1a] hover:text-[#ff4d00] transition cursor-pointer truncate text-left max-w-[100px]"
           >
-            Logout
+            {username}
           </button>
+          <div className="flex items-center gap-2">
+            <a 
+              href="http://127.0.0.1:8000/admin" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-[0.6rem] font-mono font-bold uppercase text-[#ff4d00] hover:underline"
+            >
+              Admin
+            </a>
+            <span className="text-[0.6rem] font-mono text-[#1a1a1a]/30">|</span>
+            <button 
+              onClick={onLogout}
+              className="text-[0.6rem] font-mono font-bold uppercase text-[#ff4d00] hover:underline cursor-pointer"
+            >
+              Logout
+            </button>
+          </div>
         </div>
         <div className="font-mono text-[0.6rem] leading-relaxed text-[#1a1a1a]/60">
           STATUS: <span className="text-emerald-600 font-bold">ACTIVE</span><br />

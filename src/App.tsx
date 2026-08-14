@@ -6,10 +6,11 @@ import { Header } from './components/Header';
 import { PrModal } from './components/PrModal';
 import { AuthScreen } from './components/AuthScreen';
 
-const Dashboard = React.lazy(() => import('./components/Dashboard').then(module => ({ default: module.Dashboard })));
-const LiveWorkout = React.lazy(() => import('./components/LiveWorkout').then(module => ({ default: module.LiveWorkout })));
-const ExerciseLibrary = React.lazy(() => import('./components/ExerciseLibrary').then(module => ({ default: module.ExerciseLibrary })));
-const Routines = React.lazy(() => import('./components/Routines').then(module => ({ default: module.Routines })));
+import { Dashboard } from './components/Dashboard';
+import { LiveWorkout } from './components/LiveWorkout';
+import { ExerciseLibrary } from './components/ExerciseLibrary';
+import { Routines } from './components/Routines';
+import { Profile } from './components/Profile';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ViewTab>('live_workout');
@@ -17,12 +18,60 @@ export default function App() {
     return (localStorage.getItem('flexpulse_unit') as WeightUnit) || 'lbs';
   });
 
-  const [token, setToken] = useState<string | null>(localStorage.getItem('flexpulse_token'));
-  const [username, setUsername] = useState<string | null>(localStorage.getItem('flexpulse_username'));
+  const [token, setToken] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    return localStorage.getItem('flexpulse_dark_mode') === 'true';
+  });
+
+  const [activeRoutineId, setActiveRoutineId] = useState<string | null>(null);
+  const [activeRoutineNextDayIndex, setActiveRoutineNextDayIndex] = useState<number>(0);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+
+  // Sync active routine state when user changes
+  useEffect(() => {
+    if (username) {
+      setActiveRoutineId(localStorage.getItem(`flexpulse_active_routine_${username}`));
+      const val = localStorage.getItem(`flexpulse_active_routine_day_${username}`);
+      setActiveRoutineNextDayIndex(val ? parseInt(val) : 0);
+    } else {
+      setActiveRoutineId(null);
+      setActiveRoutineNextDayIndex(0);
+    }
+  }, [username]);
+
+  // Sync session state when user changes
+  useEffect(() => {
+    if (username) {
+      try {
+        const saved = localStorage.getItem(`flexpulse_session_${username}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed.id === 'string' && Array.isArray(parsed.exerciseGroups)) {
+            setSession(parsed);
+            return;
+          }
+        }
+      } catch {}
+    }
+    setSession({ ...INITIAL_WORKOUT, id: `session-${Date.now()}` });
+  }, [username]);
+
+  // Apply dark mode theme
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('flexpulse_dark_mode', String(darkMode));
+  }, [darkMode]);
 
   const [session, setSession] = useState<WorkoutSession>(() => {
+    const currentUsername = localStorage.getItem('flexpulse_username');
     try {
-      const saved = localStorage.getItem('flexpulse_session');
+      const saved = localStorage.getItem(currentUsername ? `flexpulse_session_${currentUsername}` : 'flexpulse_session');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed.id === 'string' && Array.isArray(parsed.exerciseGroups)) {
@@ -35,9 +84,17 @@ export default function App() {
     return { ...INITIAL_WORKOUT, id: `session-${Date.now()}` };
   });
 
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [programs, setPrograms] = useState<WorkoutProgram[]>([]);
-  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [exercises, setExercises] = useState<Exercise[]>(() => {
+    const cached = localStorage.getItem('flexpulse_cached_exercises');
+    return cached ? JSON.parse(cached) : [];
+  });
+  const [programs, setPrograms] = useState<WorkoutProgram[]>(() => {
+    const cached = localStorage.getItem('flexpulse_cached_programs');
+    return cached ? JSON.parse(cached) : [];
+  });
+  const [isLoadingData, setIsLoadingData] = useState(() => {
+    return !localStorage.getItem('flexpulse_cached_exercises');
+  });
 
   // Fetch static data from Django API
   useEffect(() => {
@@ -119,11 +176,14 @@ export default function App() {
         });
 
         setExercises(mappedExercises);
+        localStorage.setItem('flexpulse_cached_exercises', JSON.stringify(mappedExercises));
 
         // Merge custom localStorage programs with DB templates
         const savedCustom = localStorage.getItem('flexpulse_custom_programs');
         const customPrograms: WorkoutProgram[] = savedCustom ? JSON.parse(savedCustom) : [];
-        setPrograms([...mappedPrograms, ...customPrograms]);
+        const mergedPrograms = [...mappedPrograms, ...customPrograms];
+        setPrograms(mergedPrograms);
+        localStorage.setItem('flexpulse_cached_programs', JSON.stringify(mergedPrograms));
 
       } catch (err) {
         console.error("Failed to fetch data from Django API:", err);
@@ -148,8 +208,10 @@ export default function App() {
 
   // Persist session
   useEffect(() => {
-    localStorage.setItem('flexpulse_session', JSON.stringify(session));
-  }, [session]);
+    if (username) {
+      localStorage.setItem(`flexpulse_session_${username}`, JSON.stringify(session));
+    }
+  }, [session, username]);
 
   // Persist unit preference
   useEffect(() => {
@@ -167,6 +229,27 @@ export default function App() {
 
   const handleToggleUnit = () =>
     setWeightUnit(prev => prev === 'lbs' ? 'kg' : 'lbs');
+
+  const handleActivateRoutine = (routineId: string | null) => {
+    setActiveRoutineId(routineId);
+    setActiveRoutineNextDayIndex(0);
+    setWorkoutComplete(false);
+    if (username) {
+      // Clear session state and storage when active routine changes or is removed
+      localStorage.removeItem(`flexpulse_session_${username}`);
+      localStorage.removeItem('flexpulse_session');
+      setSession({ ...INITIAL_WORKOUT, id: `session-${Date.now()}` });
+
+      if (routineId) {
+        localStorage.setItem(`flexpulse_active_routine_${username}`, String(routineId));
+        localStorage.setItem(`flexpulse_active_routine_day_${username}`, '0');
+        setActiveTab('live_workout');
+      } else {
+        localStorage.removeItem(`flexpulse_active_routine_${username}`);
+        localStorage.removeItem(`flexpulse_active_routine_day_${username}`);
+      }
+    }
+  };
 
   const handleSaveCustomProgram = (program: WorkoutProgram) => {
     setPrograms(prev => {
@@ -288,6 +371,7 @@ export default function App() {
 
     if (token) {
       try {
+        setIsSaving(true);
         await fetch('http://127.0.0.1:8000/api/workouts/', {
           method: 'POST',
           headers: {
@@ -298,6 +382,18 @@ export default function App() {
         });
       } catch (err) {
         console.error("Failed to save workout to DB", err);
+      } finally {
+        setIsSaving(false);
+      }
+    }
+
+    // If there is an active routine, increment day
+    const activeProgram = programs.find(p => p.id !== undefined && String(p.id) === String(activeRoutineId));
+    if (activeProgram) {
+      const nextDayIdx = (activeRoutineNextDayIndex + 1) % activeProgram.days.length;
+      setActiveRoutineNextDayIndex(nextDayIdx);
+      if (username) {
+        localStorage.setItem(`flexpulse_active_routine_day_${username}`, String(nextDayIdx));
       }
     }
 
@@ -311,13 +407,19 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    const currentUsername = username;
     setToken(null);
     setUsername(null);
     localStorage.removeItem('flexpulse_token');
     localStorage.removeItem('flexpulse_username');
     // Clear session so the new user doesn't see the old user's workout
     setSession({ ...INITIAL_WORKOUT, id: `session-${Date.now()}` });
+    if (currentUsername) {
+      localStorage.removeItem(`flexpulse_session_${currentUsername}`);
+    }
     localStorage.removeItem('flexpulse_session');
+    setActiveRoutineId(null);
+    setActiveRoutineNextDayIndex(0);
     setWorkoutComplete(false);
   };
 
@@ -333,6 +435,28 @@ export default function App() {
       />
     );
   }
+
+  if (isLoadingData) {
+    return (
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#f8f7f4]">
+        <div className="flex flex-col items-center gap-6 text-center max-w-sm p-8 bg-[#f8f7f4] border-4 border-[#1a1a1a] shadow-[8px_8px_0_#1a1a1a]">
+          {/* 45 LBS Plate Spinning Loader */}
+          <div className="relative w-20 h-20 rounded-full bg-[#1a1a1a] flex items-center justify-center animate-spin border-4 border-dashed border-[#ff4d00] shadow-[2px_2px_0_#1a1a1a]">
+            <div className="absolute w-5 h-5 rounded-full bg-[#f8f7f4] border-2 border-[#1a1a1a]"></div>
+            <span className="text-[10px] font-bold text-white uppercase font-mono tracking-widest absolute" style={{ transform: 'translateY(-14px)' }}>45</span>
+            <span className="text-[10px] font-bold text-white uppercase font-mono tracking-widest absolute" style={{ transform: 'translateY(14px)' }}>LBS</span>
+          </div>
+          <div>
+            <p className="font-oswald text-2xl uppercase font-semibold text-[#1a1a1a] tracking-wider">Loading FlexPulse...</p>
+            <p className="font-mono text-[0.65rem] text-[#1a1a1a]/60 uppercase mt-1">Connecting to server</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const activeProgram = programs.find(p => p.id !== undefined && String(p.id) === String(activeRoutineId)) || null;
+  const activeDay = activeProgram && activeProgram.days[activeRoutineNextDayIndex] ? activeProgram.days[activeRoutineNextDayIndex] : null;
 
   return (
     <div className="h-[100dvh] bg-[#F8F7F4] text-[#111113] flex flex-col md:flex-row overflow-hidden font-sans">
@@ -350,16 +474,12 @@ export default function App() {
           activeSessionTitle={session.title}
           weightUnit={weightUnit}
           onToggleUnit={handleToggleUnit}
+          darkMode={darkMode}
+          onToggleDarkMode={() => setDarkMode(!darkMode)}
         />
 
         <main id="main-content" className="flex-1 overflow-y-auto p-6 md:p-10 dot-bg">
-          {isLoadingData ? (
-            <div className="flex items-center justify-center h-full font-mono text-sm uppercase text-[#1a1a1a]/50 flex-col gap-4">
-              <div className="w-8 h-8 border-4 border-[#ff4d00] border-t-transparent rounded-full animate-spin"></div>
-              Loading Data from Server...
-            </div>
-          ) : (
-            <React.Suspense fallback={<div className="flex items-center justify-center h-full font-mono text-sm uppercase text-[#1a1a1a]/50">Loading Module...</div>}>
+          <React.Suspense fallback={<div className="flex items-center justify-center h-full font-mono text-sm uppercase text-[#1a1a1a]/50">Loading Module...</div>}>
               {activeTab === 'dashboard' && (
                 <Dashboard session={session} prs={prs} setActiveTab={setActiveTab} weightUnit={weightUnit} />
               )}
@@ -374,6 +494,10 @@ export default function App() {
                   onFinishWorkout={handleFinishWorkout}
                   onGoToRoutines={() => setActiveTab('routines')}
                   onResetWorkout={handleResetWorkout}
+                  activeProgram={activeProgram}
+                  activeDay={activeDay}
+                  activeDayIndex={activeRoutineNextDayIndex}
+                  onStartDay={handleStartDay}
                 />
               )}
               {activeTab === 'exercises' && (
@@ -389,12 +513,40 @@ export default function App() {
                   exercises={exercises}
                   onStartDay={handleStartDay}
                   onSaveCustomProgram={handleSaveCustomProgram}
+                  activeRoutineId={activeRoutineId}
+                  onActivateRoutine={handleActivateRoutine}
+                />
+              )}
+              {activeTab === 'profile' && (
+                <Profile
+                  token={token}
+                  username={username}
+                  programs={programs}
+                  activeRoutineId={activeRoutineId}
+                  onActivateRoutine={handleActivateRoutine}
+                  prs={prs}
                 />
               )}
             </React.Suspense>
-          )}
         </main>
       </div>
+
+      {isSaving && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70">
+          <div className="flex flex-col items-center gap-6 text-center max-w-sm p-8 bg-[#f8f7f4] border-4 border-[#1a1a1a] shadow-[8px_8px_0_#1a1a1a]">
+            {/* 45 LBS Plate Spinning Loader */}
+            <div className="relative w-20 h-20 rounded-full bg-[#1a1a1a] flex items-center justify-center animate-spin border-4 border-dashed border-[#ff4d00] shadow-[2px_2px_0_#1a1a1a]">
+              <div className="absolute w-5 h-5 rounded-full bg-[#f8f7f4] border-2 border-[#1a1a1a]"></div>
+              <span className="text-[10px] font-bold text-white uppercase font-mono tracking-widest absolute" style={{ transform: 'translateY(-14px)' }}>45</span>
+              <span className="text-[10px] font-bold text-white uppercase font-mono tracking-widest absolute" style={{ transform: 'translateY(14px)' }}>LBS</span>
+            </div>
+            <div>
+              <p className="font-oswald text-2xl uppercase font-semibold text-[#1a1a1a] tracking-wider">Racking the Weights...</p>
+              <p className="font-mono text-[0.65rem] text-[#1a1a1a]/60 uppercase mt-1">Saving workout to FlexPulse cloud</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <PrModal
         isOpen={prModalOpen}

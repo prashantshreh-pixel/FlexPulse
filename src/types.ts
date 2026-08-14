@@ -71,21 +71,21 @@ export interface ProgramExercise {
 
 export interface WorkoutDay {
   id: string;
-  label: string;       // "Day 1", "Push A"
+  label?: string;       // "Day 1", "Push A"
   name: string;        // "Push Day — Chest & Shoulders"
-  musclesFocus: MuscleGroup[];
+  musclesFocus?: MuscleGroup[];
   exercises: ProgramExercise[];
 }
 
 export interface WorkoutProgram {
   id: string;
   name: string;
-  shortName: string;
-  split: ProgramSplit;
+  shortName?: string;
+  split?: ProgramSplit;
   description: string;
-  frequency: string;   // "6 days/week"
-  difficulty: DifficultyLevel;
-  goal: FitnessGoal;
+  frequency?: string;   // "6 days/week"
+  difficulty?: DifficultyLevel;
+  goal?: FitnessGoal;
   isCustom?: boolean;
   days: WorkoutDay[];
 }
@@ -100,7 +100,7 @@ export interface PersonalRecord {
   achievedAt: string;
 }
 
-export type ViewTab = 'dashboard' | 'live_workout' | 'exercises' | 'routines';
+export type ViewTab = 'dashboard' | 'live_workout' | 'exercises' | 'routines' | 'profile';
 export type WeightUnit = 'lbs' | 'kg';
 
 // ── Weight conversion helpers ────────────────────────────────────────────────

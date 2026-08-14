@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Exercise, WorkoutSession, MuscleGroup, WeightUnit, toDisplayWeight, toStorageLbs } from '../types';
-import { Plus, Check, CalendarDays, Dumbbell, ChevronRight, Info, X } from 'lucide-react';
+import { Exercise, WorkoutSession, MuscleGroup, WeightUnit, toDisplayWeight, toStorageLbs, WorkoutProgram, WorkoutDay } from '../types';
+import { Plus, Check, CalendarDays, Dumbbell, ChevronRight, Info, X, Play } from 'lucide-react';
 
 interface LiveWorkoutProps {
   session: WorkoutSession;
@@ -12,6 +12,10 @@ interface LiveWorkoutProps {
   onFinishWorkout: () => void;
   onGoToRoutines: () => void;
   onResetWorkout: () => void;
+  activeProgram: WorkoutProgram | null;
+  activeDay: WorkoutDay | null;
+  activeDayIndex: number;
+  onStartDay: (day: WorkoutDay, programName: string) => void;
 }
 
 const DAYS   = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -63,6 +67,7 @@ const RPE_TOOLTIP: React.FC<{ onClose: () => void }> = ({ onClose }) => (
 export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
   session, exercises, weightUnit, workoutComplete,
   onLogSet, onAddExerciseToSession, onFinishWorkout, onGoToRoutines, onResetWorkout,
+  activeProgram, activeDay, activeDayIndex, onStartDay,
 }) => {
   const [searchQuery, setSearchQuery]   = useState('');
   const [selectedMuscle, setSelectedMuscle] = useState<string>('All');
@@ -190,6 +195,67 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
 
   // ── EMPTY STATE ────────────────────────────────────────────────────────────
   if (session.exerciseGroups.length === 0) {
+    if (activeProgram && activeDay) {
+      return (
+        <div className="max-w-2xl mx-auto space-y-8">
+          <div className="flex items-center gap-3">
+            <CalendarDays className="w-5 h-5 text-[#ff4d00]" />
+            <span className="font-mono text-sm font-bold text-[#1a1a1a]/60 uppercase tracking-widest">
+              {getTodayLabel()}
+            </span>
+          </div>
+
+          <div className="border-2 border-[#1a1a1a] bg-white p-8 shadow-[4px_4px_0_#1a1a1a] space-y-6">
+            <div className="flex justify-between items-start border-b border-[#1a1a1a]/10 pb-4">
+              <div>
+                <p className="font-mono text-[0.55rem] uppercase font-bold text-[#ff4d00]">Active Program: {activeProgram.name}</p>
+                <h2 className="font-oswald text-3xl uppercase font-semibold text-[#1a1a1a] mt-1">
+                  Next Up: {activeDay.name}
+                </h2>
+              </div>
+              <span className="font-mono text-[0.6rem] bg-[#1a1a1a] text-white px-2.5 py-1 uppercase font-bold">
+                Day {activeDayIndex + 1}/{activeProgram.days.length}
+              </span>
+            </div>
+
+            {/* List of exercises in this day */}
+            <div className="space-y-3">
+              {activeDay.exercises.map((dex, index) => {
+                const ex = exercises.find(e => e.id === dex.exerciseId);
+                return (
+                  <div key={index} className="flex justify-between items-center p-3 bg-[#f8f7f4] border border-[#1a1a1a]/10">
+                    <div>
+                      <span className="font-mono text-[0.7rem] uppercase font-bold text-[#1a1a1a]">{ex?.name || 'Exercise'}</span>
+                      <span className="font-mono text-[0.55rem] text-[#1a1a1a]/50 uppercase block">{ex?.muscleGroup} • {ex?.equipment}</span>
+                    </div>
+                    <span className="font-mono text-xs font-bold text-[#1a1a1a]/80 bg-white border border-[#1a1a1a]/20 px-2 py-0.5 shadow-sm">
+                      {dex.sets}x{dex.reps}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <button
+                onClick={() => onStartDay(activeDay, activeProgram.name)}
+                className="flex-1 flex items-center justify-center gap-2 bg-[#ff4d00] text-white border-2 border-[#ff4d00] px-6 py-3 font-oswald uppercase text-sm font-semibold hover:bg-[#e03d00] transition cursor-pointer shadow-[4px_4px_0_#1a1a1a] active:translate-y-0.5 active:shadow-[0_0_0_#1a1a1a]"
+              >
+                <Play className="w-4 h-4 fill-white" />
+                Start Workout Now
+              </button>
+              <button
+                onClick={onGoToRoutines}
+                className="flex items-center justify-center gap-2 bg-white text-[#1a1a1a] border-2 border-[#1a1a1a] px-6 py-3 font-oswald uppercase text-sm font-semibold hover:bg-[#1a1a1a]/5 transition cursor-pointer shadow-[4px_4px_0_#1a1a1a] active:translate-y-0.5 active:shadow-[0_0_0_#1a1a1a]"
+              >
+                Change Routine
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="flex items-center gap-3">
