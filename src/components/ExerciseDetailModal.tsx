@@ -1,16 +1,45 @@
 import React, { useState } from 'react';
 import { Exercise, WeightUnit } from '../types';
 import { X, Plus, Info, ChevronDown, ChevronUp, Dumbbell } from 'lucide-react';
+// @ts-ignore
+import bicepCurlImg from './Barbell Bicep Curl.jpg';
+// @ts-ignore
+import bentOverRowImg from './Barbell Bent-Over Row.jpg';
+// @ts-ignore
+import conventionalDeadliftImg from './Barbell Conventional Deadlift.jpg';
 
 interface ExerciseDetailModalProps {
   exercise: Exercise | null;
   isOpen: boolean;
   onClose: () => void;
   onAdd: (exercise: Exercise) => void;
+  readOnly?: boolean;
 }
 
 // ── Exercise animation per muscle group ──────────────────────────────────────
-const AnimationBox: React.FC<{ muscleGroup: string; category: string }> = ({ muscleGroup, category }) => {
+const AnimationBox: React.FC<{ muscleGroup: string; category: string; exerciseName: string }> = ({ muscleGroup, category, exerciseName }) => {
+  if (exerciseName.toLowerCase() === 'barbell bicep curl') {
+    return (
+      <div className="relative flex items-center justify-center rounded-none border-2 border-[#1a1a1a] overflow-hidden bg-white" style={{ height: '200px' }}>
+        <img src={bicepCurlImg} alt="Barbell Bicep Curl" className="w-full h-full object-contain" />
+      </div>
+    );
+  }
+  if (exerciseName.toLowerCase() === 'barbell bent-over row') {
+    return (
+      <div className="relative flex items-center justify-center rounded-none border-2 border-[#1a1a1a] overflow-hidden bg-white" style={{ height: '200px' }}>
+        <img src={bentOverRowImg} alt="Barbell Bent-Over Row" className="w-full h-full object-contain" />
+      </div>
+    );
+  }
+  if (exerciseName.toLowerCase() === 'barbell conventional deadlift') {
+    return (
+      <div className="relative flex items-center justify-center rounded-none border-2 border-[#1a1a1a] overflow-hidden bg-white" style={{ height: '200px' }}>
+        <img src={conventionalDeadliftImg} alt="Barbell Conventional Deadlift" className="w-full h-full object-contain" />
+      </div>
+    );
+  }
+
   const config: Record<string, { animation: string; color: string; bg: string; label: string; icon: string; gif: string }> = {
     Chest:     { animation: 'ex-push 1.8s ease-in-out infinite',    color: '#ef4444', bg: '#fef2f2', label: 'HORIZONTAL PUSH',   icon: '⇄', gif: 'https://media.giphy.com/media/3o6Ztp2VbvwP6G3fIk/giphy.gif' },
     Back:      { animation: 'ex-pull 1.8s ease-in-out infinite',    color: '#3b82f6', bg: '#eff6ff', label: 'HORIZONTAL PULL',   icon: '⇄', gif: 'https://media.giphy.com/media/l0HlJz5f3xG2g8vO8/giphy.gif' },
@@ -92,7 +121,7 @@ const COMMON_MISTAKES: Record<string, string[]> = {
 };
 
 export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
-  exercise, isOpen, onClose, onAdd,
+  exercise, isOpen, onClose, onAdd, readOnly = false,
 }) => {
   const [showMistakes, setShowMistakes] = useState(false);
 
@@ -103,9 +132,12 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
   const mistakes = COMMON_MISTAKES[exercise.muscleGroup] || [];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60">
-      <div className="min-h-full flex items-start justify-center p-4 sm:p-6">
-        <div className="w-full max-w-2xl bg-[#f8f7f4] border-2 border-[#1a1a1a] shadow-[8px_8px_0_#1a1a1a] my-8">
+    <div className="fixed inset-0 z-50 flex justify-end">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/25 backdrop-blur-md" onClick={onClose} />
+      
+      {/* Drawer */}
+      <div className="relative w-full max-w-lg bg-[#f8f7f4] border-l-2 border-[#1a1a1a] h-full overflow-y-auto shadow-[-8px_0_0_#1a1a1a] flex flex-col slide-in-right">
           {/* Header */}
           <div className="flex items-start justify-between gap-4 p-6 border-b-2 border-[#1a1a1a] bg-white">
             <div>
@@ -132,7 +164,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
           {/* Body */}
           <div className="p-6 space-y-6">
             {/* Animation */}
-            <AnimationBox muscleGroup={exercise.muscleGroup} category={exercise.category} />
+            <AnimationBox muscleGroup={exercise.muscleGroup} category={exercise.category} exerciseName={exercise.name} />
 
             {/* Step-by-step */}
             <div className="space-y-3">
@@ -194,22 +226,23 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
 
           {/* Footer */}
           <div className="p-6 border-t-2 border-[#1a1a1a] bg-white flex gap-3">
-            <button
-              onClick={() => { onAdd(exercise); onClose(); }}
-              className="flex-1 flex items-center justify-center gap-2 bg-[#ff4d00] text-white border-2 border-[#ff4d00] px-5 py-3 font-oswald uppercase text-base font-semibold hover:bg-[#e03d00] transition cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              Add to Today's Workout
-            </button>
+            {!readOnly && (
+              <button
+                onClick={() => { onAdd(exercise); onClose(); }}
+                className="flex-1 flex items-center justify-center gap-2 bg-[#ff4d00] text-white border-2 border-[#ff4d00] px-5 py-3 font-oswald uppercase text-base font-semibold hover:bg-[#e03d00] transition cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                Add to Today's Workout
+              </button>
+            )}
             <button
               onClick={onClose}
-              className="px-5 py-3 border-2 border-[#1a1a1a] font-oswald uppercase text-sm font-semibold hover:bg-[#1a1a1a]/5 transition cursor-pointer"
+              className={`${readOnly ? 'flex-1' : ''} px-5 py-3 border-2 border-[#1a1a1a] font-oswald uppercase text-sm font-semibold hover:bg-[#1a1a1a]/5 transition cursor-pointer`}
             >
               Close
             </button>
           </div>
         </div>
       </div>
-    </div>
   );
 };

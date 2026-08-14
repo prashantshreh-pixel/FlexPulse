@@ -122,7 +122,7 @@ Use this app to track every set. PRs are detected automatically.`,
 // ── Tip Detail Panel ─────────────────────────────────────────────────────────
 const TipPanel: React.FC<{ tip: typeof QUICK_TIPS[0]; onClose: () => void }> = ({ tip, onClose }) => (
   <div className="fixed inset-0 z-50 flex justify-end">
-    <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+    <div className="absolute inset-0 bg-black/25 backdrop-blur-md" onClick={onClose} />
     <div className="relative w-full max-w-md bg-white border-l-2 border-[#1a1a1a] h-full overflow-y-auto shadow-[-8px_0_0_#1a1a1a] flex flex-col">
       {/* Header */}
       <div className="p-6 border-b-2 border-[#1a1a1a] sticky top-0 bg-white z-10">
@@ -189,9 +189,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ session, prs, setActiveTab
       <div className="border-2 border-[#1a1a1a] bg-white p-6 shadow-[4px_4px_0_#1a1a1a] flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <p className="font-mono text-xs uppercase font-bold text-[#ff4d00]">Dashboard</p>
-          <h2 className="font-oswald text-4xl font-semibold uppercase text-[#1a1a1a] mt-1">
-            Workout OS v2.0
-          </h2>
           <p className="font-mono text-xs text-[#1a1a1a]/70 mt-2 max-w-xl leading-relaxed">
             Your personal training command center. Track sets, break PRs, and stick to your program.
           </p>

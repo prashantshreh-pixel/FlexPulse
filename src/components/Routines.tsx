@@ -7,10 +7,13 @@ interface RoutinesProps {
   exercises: Exercise[];
   onStartDay: (day: WorkoutDay, programName: string) => void;
   onSaveCustomProgram: (program: WorkoutProgram) => void;
+  activeRoutineId: string | null;
+  onActivateRoutine: (routineId: string | null) => void;
 }
 
 export const Routines: React.FC<RoutinesProps> = ({
   programs, exercises, onStartDay, onSaveCustomProgram,
+  activeRoutineId, onActivateRoutine,
 }) => {
   const [activeView, setActiveView] = useState<'grid' | 'detail' | 'builder'>('grid');
   const [selectedProgram, setSelectedProgram] = useState<WorkoutProgram | null>(null);
@@ -98,27 +101,41 @@ export const Routines: React.FC<RoutinesProps> = ({
 
   // ── VIEWS ──────────────────────────────────────────────────────────────────
   if (activeView === 'detail' && selectedProgram) {
+    const isActive = activeRoutineId !== null && String(activeRoutineId) === String(selectedProgram.id);
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         <button onClick={() => setActiveView('grid')} className="flex items-center gap-2 font-mono text-xs uppercase font-bold text-[#1a1a1a]/60 hover:text-[#ff4d00] transition cursor-pointer">
           <ArrowLeft className="w-4 h-4" /> Back to Routines
         </button>
         
-        <div className="border-2 border-[#1a1a1a] bg-white p-8 shadow-[6px_6px_0_#1a1a1a]">
-          <div className="flex gap-2 mb-3">
-            <span className="font-mono text-[0.6rem] uppercase font-bold px-2 py-0.5 bg-[#1a1a1a] text-white">
-              {selectedProgram.days.length} Days
-            </span>
-            {selectedProgram.isCustom && (
-              <span className="font-mono text-[0.6rem] uppercase font-bold px-2 py-0.5 bg-[#ff4d00] text-white">
-                Custom Routine
+        <div className="border-2 border-[#1a1a1a] bg-white p-8 shadow-[6px_6px_0_#1a1a1a] flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div>
+            <div className="flex gap-2 mb-3">
+              <span className="font-mono text-[0.6rem] uppercase font-bold px-2 py-0.5 bg-[#1a1a1a] text-white">
+                {selectedProgram.days.length} Days
               </span>
-            )}
+              {selectedProgram.isCustom && (
+                <span className="font-mono text-[0.6rem] uppercase font-bold px-2 py-0.5 bg-[#ff4d00] text-white">
+                  Custom Routine
+                </span>
+              )}
+              {isActive && (
+                <span className="font-mono text-[0.6rem] uppercase font-bold px-2 py-0.5 bg-[#ff4d00] text-white animate-pulse">
+                  Active Program
+                </span>
+              )}
+            </div>
+            <h2 className="font-oswald text-4xl uppercase font-semibold text-[#1a1a1a]">{selectedProgram.name}</h2>
+            <p className="font-mono text-sm text-[#1a1a1a]/70 mt-2 leading-relaxed max-w-2xl">
+              {selectedProgram.description}
+            </p>
           </div>
-          <h2 className="font-oswald text-4xl uppercase font-semibold text-[#1a1a1a]">{selectedProgram.name}</h2>
-          <p className="font-mono text-sm text-[#1a1a1a]/70 mt-2 leading-relaxed max-w-2xl">
-            {selectedProgram.description}
-          </p>
+          <button
+            onClick={() => onActivateRoutine(isActive ? null : selectedProgram.id)}
+            className={`action-btn ${isActive ? '' : 'primary'} shrink-0 w-full md:w-auto justify-center`}
+          >
+            {isActive ? 'Deactivate Program' : 'Activate Program'}
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -150,15 +167,6 @@ export const Routines: React.FC<RoutinesProps> = ({
                     </div>
                   );
                 })}
-              </div>
-
-              <div className="p-4 border-t-2 border-[#1a1a1a] bg-white mt-auto">
-                <button
-                  onClick={() => onStartDay(day, selectedProgram.name)}
-                  className="w-full flex justify-center items-center gap-2 bg-[#ff4d00] text-white border-2 border-[#ff4d00] px-4 py-3 font-oswald uppercase text-sm font-semibold hover:bg-[#e03d00] transition cursor-pointer"
-                >
-                  <Play className="w-4 h-4 fill-white" /> Start {day.name}
-                </button>
               </div>
             </div>
           ))}

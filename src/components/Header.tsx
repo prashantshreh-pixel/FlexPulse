@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Timer } from 'lucide-react';
+import { Play, Pause, RotateCcw, Timer, Sun, Moon } from 'lucide-react';
 import { WeightUnit } from '../types';
 
 interface HeaderProps {
@@ -8,6 +8,8 @@ interface HeaderProps {
   activeSessionTitle: string;
   weightUnit: WeightUnit;
   onToggleUnit: () => void;
+  darkMode: boolean;
+  onToggleDarkMode: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -16,6 +18,8 @@ export const Header: React.FC<HeaderProps> = ({
   activeSessionTitle,
   weightUnit,
   onToggleUnit,
+  darkMode,
+  onToggleDarkMode,
 }) => {
   const [secondsLeft, setSecondsLeft] = useState<number>(restTimerDuration);
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -57,6 +61,15 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-4 ml-auto">
+        {/* DARK MODE TOGGLE */}
+        <button
+          onClick={onToggleDarkMode}
+          className="p-1.5 border-2 border-[#1a1a1a] bg-white text-[#1a1a1a] shadow-[2px_2px_0_#1a1a1a] hover:bg-[#1a1a1a]/5 active:translate-y-0.5 active:shadow-[0_0_0_#1a1a1a] transition cursor-pointer"
+          title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {darkMode ? <Sun className="w-4 h-4 text-[#ff4d00]" /> : <Moon className="w-4 h-4" />}
+        </button>
+
         {/* KG / LBS TOGGLE */}
         <div className="flex border-2 border-[#1a1a1a] overflow-hidden">
           <button

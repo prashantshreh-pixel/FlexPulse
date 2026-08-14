@@ -13,6 +13,20 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     preferred_unit = models.CharField(max_length=10, choices=[('lbs', 'Pounds'), ('kg', 'Kilograms')], default='lbs')
     default_rest_duration = models.IntegerField(default=90, help_text="Default rest timer in seconds")
+    bio = models.TextField(blank=True, null=True, max_length=500)
+    profile_picture = models.TextField(blank=True, null=True, help_text="Base64 encoded string or URL for avatar")
+    background_picture = models.TextField(blank=True, null=True, help_text="Base64 encoded string or URL for cover image")
+    
+    # Gym & Personal Fitness Metrics
+    height = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Height in cm")
+    weight = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Body weight in preferred unit")
+    body_fat = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True, help_text="Body fat percentage")
+    chest = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Chest size in inches")
+    waist = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Waist size in inches")
+    biceps = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Biceps size in inches")
+    thighs = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Thighs size in inches")
+    calves = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Calves size in inches")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

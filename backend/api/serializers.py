@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Exercise, Routine, RoutineExercise, WorkoutLog, SetLog
+from .models import Exercise, Routine, RoutineExercise, WorkoutLog, SetLog, UserProfile
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -67,4 +67,39 @@ class WorkoutLogSerializer(serializers.ModelSerializer):
             SetLog.objects.create(workout=workout, **set_data)
             
         workout.update_total_volume()
-        return workout
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = [
+            'preferred_unit', 'default_rest_duration', 'bio', 'profile_picture', 'background_picture',
+            'height', 'weight', 'body_fat', 'chest', 'waist', 'biceps', 'thighs', 'calves'
+        ]
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    profile = UserProfileSerializer(required=False)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'profile', 'password']
+        extra_kwargs = {
+            'password': {'write_only': True, 'required': False},
+            'id': {'read_only': True}
+        }
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile', None)
+        password = validated_data.pop('password', None)
+        
+        instance.username = validated_data.get('username', instance.username)
+        instance.email = validated_data.get('email', instance.email)
+        if password:
+            instance.set_password(password)
+        instance.save()
+
+        if profile_data:
+            profile, created = UserProfile.objects.get_or_create(user=instance)
+            for attr, value in profile_data.items():
+                setattr(profile, attr, value)
+            profile.save()
+
+        return instance
