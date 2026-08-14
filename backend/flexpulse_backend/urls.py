@@ -17,10 +17,17 @@ Including another URLconf
 from django.contrib import admin
 from django.views.generic import TemplateView
 from django.urls import path, re_path, include
+from django.views.static import serve
+from django.conf import settings
+import os
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
+    # Explicitly serve static assets from the Vite dist directory
+    path('assets/<path:path>', serve, {
+        'document_root': os.path.join(settings.BASE_DIR, '../dist/assets'),
+    }),
     # Catch-all to serve index.html for React router
     re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
 ]
