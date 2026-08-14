@@ -58,7 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, usern
           </button>
           <div className="flex items-center gap-2">
             <a 
-              href="http://127.0.0.1:8000/admin" 
+              href="/admin" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-[0.6rem] font-mono font-bold uppercase text-[#ff4d00] hover:underline"

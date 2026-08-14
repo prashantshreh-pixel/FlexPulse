@@ -20,7 +20,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
   const [regError, setRegError] = useState('');
 
   const [isLoading, setIsLoading] = useState(false);
-  const API_BASE = 'http://127.0.0.1:8000/api/auth';
+  const API_BASE = '/api/auth';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

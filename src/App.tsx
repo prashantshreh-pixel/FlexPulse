@@ -107,9 +107,9 @@ export default function App() {
         }
 
         const [exRes, rtRes, prRes] = await Promise.all([
-          fetch('http://127.0.0.1:8000/api/exercises/', { headers }),
-          fetch('http://127.0.0.1:8000/api/routines/', { headers }),
-          token ? fetch('http://127.0.0.1:8000/api/prs/', { headers }) : Promise.resolve(null)
+          fetch('/api/exercises/', { headers }),
+          fetch('/api/routines/', { headers }),
+          token ? fetch('/api/prs/', { headers }) : Promise.resolve(null)
         ]);
         
         if (!exRes.ok || !rtRes.ok) throw new Error("API response not ok");
@@ -372,7 +372,7 @@ export default function App() {
     if (token) {
       try {
         setIsSaving(true);
-        await fetch('http://127.0.0.1:8000/api/workouts/', {
+        await fetch('/api/workouts/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
