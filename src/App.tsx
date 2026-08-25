@@ -387,6 +387,14 @@ export default function App() {
       }
     }
 
+    // Increment persistent workout streak in localStorage if the finished workout had sets
+    const totalSets = session.exerciseGroups.reduce((a, g) => a + g.sets.length, 0);
+    if (totalSets > 0) {
+      const storageKey = `flexpulse_streak_${username || 'Athlete'}`;
+      const currentStreakVal = parseInt(localStorage.getItem(storageKey) || '0');
+      localStorage.setItem(storageKey, String(currentStreakVal + 1));
+    }
+
     // If there is an active routine, increment day
     const activeProgram = programs.find(p => p.id !== undefined && String(p.id) === String(activeRoutineId));
     if (activeProgram) {

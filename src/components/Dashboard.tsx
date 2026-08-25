@@ -183,6 +183,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ session, prs, setActiveTab
   const [selectedTip, setSelectedTip] = useState<typeof QUICK_TIPS[0] | null>(null);
   const totalSets = session.exerciseGroups.reduce((a, g) => a + g.sets.length, 0);
 
+  // Filter PRs to SBD only (Squat, Bench, Deadlift)
+  const sbdPrs = prs.filter(pr => {
+    const name = pr.exerciseName.toLowerCase();
+    return name.includes('squat') || name.includes('bench') || name.includes('deadlift');
+  });
+
+  // Calculate dynamic workout streak
+  const username = localStorage.getItem('flexpulse_username') || 'Athlete';
+  const savedStreak = parseInt(localStorage.getItem(`flexpulse_streak_${username}`) || '0');
+  const currentStreak = savedStreak + (totalSets > 0 ? 1 : 0);
+
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
       {/* Hero */}
@@ -193,18 +204,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ session, prs, setActiveTab
             Your personal training command center. Track sets, break PRs, and stick to your program.
           </p>
         </div>
-        <button onClick={() => setActiveTab('live_workout')} className="action-btn primary shrink-0">
-          <Zap className="w-4 h-4 fill-white" />
-          <span>Today's Workout</span>
-        </button>
       </div>
 
       {/* Metrics grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Workout Streak',   val: '14 Days',      sub: '+2 days this week',                       red: true  },
+          { label: 'Workout Streak',   val: `${currentStreak} ${currentStreak === 1 ? 'Day' : 'Days'}`, sub: totalSets > 0 ? 'Active session counted' : 'Complete a set to start', red: true  },
           { label: 'Weekly Volume',    val: toDisplayWeight(session.totalVolumeLbs + 38800, weightUnit).toLocaleString(), sub: `${weightUnit} this week`, red: false },
-          { label: 'Personal Records', val: `${prs.length} PRs`, sub: 'lifetime',                           red: true  },
+          { label: 'Personal Records', val: `${sbdPrs.length} PRs`, sub: 'lifetime SBD',                            red: true  },
           { label: 'Sets Today',       val: String(totalSets),   sub: `${toDisplayWeight(session.totalVolumeLbs, weightUnit).toLocaleString()} ${weightUnit}`, red: false },
         ].map(m => (
           <div key={m.label} className="border-2 border-[#1a1a1a] bg-white p-5 shadow-[2px_2px_0_#1a1a1a]">
@@ -225,7 +232,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ session, prs, setActiveTab
                 <Trophy className="w-4 h-4 text-[#ff4d00]" />
                 Personal Records
               </h3>
-              <p className="font-mono text-xs text-[#1a1a1a]/60 mt-0.5">Auto-detected on every set</p>
+              <p className="font-mono text-xs text-[#1a1a1a]/60 mt-0.5">Auto-detected on every SBD set</p>
             </div>
             <button onClick={() => setActiveTab('live_workout')}
               className="font-mono text-xs text-[#ff4d00] font-bold hover:underline flex items-center gap-1 cursor-pointer">
@@ -234,11 +241,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ session, prs, setActiveTab
           </div>
 
           <div className="space-y-3">
-            {prs.length === 0 ? (
+            {sbdPrs.length === 0 ? (
               <div className="text-center py-8 font-mono text-xs text-[#1a1a1a]/40 uppercase">
-                No PRs yet — start your first workout!
+                No SBD PRs yet — start your first workout!
               </div>
-            ) : prs.map(pr => (
+            ) : sbdPrs.map(pr => (
               <div key={pr.id} className="p-4 bg-[#f8f7f4] border border-[#1a1a1a] flex items-center justify-between">
                 <div>
                   <h4 className="font-oswald text-lg uppercase font-semibold text-[#1a1a1a]">{pr.exerciseName}</h4>
