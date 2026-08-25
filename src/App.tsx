@@ -11,9 +11,11 @@ import { LiveWorkout } from './components/LiveWorkout';
 import { ExerciseLibrary } from './components/ExerciseLibrary';
 import { Routines } from './components/Routines';
 import { Profile } from './components/Profile';
+import { Menu, LayoutDashboard, Dumbbell, BookOpen, ClipboardList, User, ShieldAlert, LogOut } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ViewTab>('live_workout');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [weightUnit, setWeightUnit] = useState<WeightUnit>(() => {
     return (localStorage.getItem('flexpulse_unit') as WeightUnit) || 'lbs';
   });
@@ -467,7 +469,7 @@ export default function App() {
   const activeDay = activeProgram && activeProgram.days[activeRoutineNextDayIndex] ? activeProgram.days[activeRoutineNextDayIndex] : null;
 
   return (
-    <div className="h-[100dvh] bg-[#F8F7F4] text-[#111113] flex flex-col md:flex-row overflow-hidden font-sans">
+    <div className="h-[100dvh] bg-[#F8F7F4] dark:bg-[#151518] text-[#111113] dark:text-white flex flex-col md:flex-row overflow-hidden font-sans">
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
@@ -476,6 +478,20 @@ export default function App() {
       />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Mobile Top Header */}
+        <div className="flex md:hidden items-center justify-between px-6 py-4 bg-[#f8f7f4] dark:bg-[#151518] border-b-2 border-[#1a1a1a] dark:border-zinc-800 select-none shrink-0">
+          <div className="flex items-center gap-2">
+            <Dumbbell className="w-5 h-5 text-[#ff4d00]" />
+            <span className="font-oswald uppercase text-xl font-bold tracking-tight text-[#1a1a1a] dark:text-white">FlexPulse</span>
+          </div>
+          <button 
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="p-1.5 border-2 border-[#1a1a1a] dark:border-zinc-700 bg-white dark:bg-[#111113] text-[#1a1a1a] dark:text-white shadow-[2px_2px_0_#1a1a1a] dark:shadow-[2px_2px_0_#000] active:translate-y-0.5 active:shadow-[1px_1px_0_#1a1a1a] cursor-pointer"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        </div>
+
         <Header
           restTimerDuration={90}
           timerAutoStartKey={timerTriggerKey}
@@ -562,6 +578,85 @@ export default function App() {
         prDetails={currentPrDetails}
         weightUnit={weightUnit}
       />
+
+      {/* Mobile Drawer Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="absolute inset-0 z-0" onClick={() => setIsMobileMenuOpen(false)} />
+          
+          <div className="relative z-10 w-full bg-[#f8f7f4] dark:bg-[#151518] border-t-4 border-[#1a1a1a] dark:border-zinc-800 p-6 flex flex-col gap-4 max-h-[85vh] overflow-y-auto shadow-[0_-8px_0_#1a1a1a] dark:shadow-[0_-8px_0_#000] animate-slide-up">
+            <div className="font-mono text-[0.65rem] uppercase tracking-widest text-[#1a1a1a]/60 dark:text-white/60 mb-2 border-b border-[#1a1a1a]/10 dark:border-white/10 pb-2">
+              Menu Navigation
+            </div>
+            
+            <nav className="flex flex-col border border-[#1a1a1a] dark:border-zinc-800 bg-white dark:bg-[#111113] divide-y divide-[#1a1a1a] dark:divide-zinc-800">
+              {[
+                { id: 'dashboard',    label: 'Dashboard', icon: LayoutDashboard },
+                { id: 'live_workout', label: 'Today',     icon: Dumbbell,     badge: '●' },
+                { id: 'exercises',   label: 'Exercises', icon: BookOpen },
+                { id: 'routines',    label: 'Routines',  icon: ClipboardList },
+                { id: 'profile',     label: 'Profile',   icon: User },
+              ].map(item => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => { setActiveTab(item.id as ViewTab); setIsMobileMenuOpen(false); }}
+                    className="w-full flex items-center justify-between px-4 py-4 text-left font-oswald uppercase text-[1.1rem] text-[#1a1a1a] dark:text-white hover:bg-[#1a1a1a]/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon className="w-5 h-5 text-[#1a1a1a]/50 dark:text-white/50" />
+                      <span>{item.label}</span>
+                      {item.badge && <span className="text-[#ff4d00] font-black text-sm">●</span>}
+                    </div>
+                    <span className="text-[#1a1a1a]/30 dark:text-white/30 font-bold">&gt;</span>
+                  </button>
+                );
+              })}
+              
+              <a 
+                href="/admin" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-between px-4 py-4 text-left font-oswald uppercase text-[1.1rem] text-[#1a1a1a] dark:text-white hover:bg-[#1a1a1a]/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <ShieldAlert className="w-5 h-5 text-[#1a1a1a]/50 dark:text-white/50" />
+                  <span>Admin Console</span>
+                </div>
+                <span className="text-[#1a1a1a]/30 dark:text-white/30 font-bold">&gt;</span>
+              </a>
+
+              <button
+                onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}
+                className="w-full flex items-center justify-between px-4 py-4 text-left font-oswald uppercase text-[1.1rem] text-[#ff4d00] hover:bg-[#1a1a1a]/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <LogOut className="w-5 h-5 text-[#ff4d00]" />
+                  <span>Logout Account</span>
+                </div>
+                <span className="text-[#ff4d00]/30 font-bold">&gt;</span>
+              </button>
+            </nav>
+
+            {/* Dark Mode toggle */}
+            <button
+              onClick={() => { setDarkMode(!darkMode); setIsMobileMenuOpen(false); }}
+              className="mt-2 w-full py-3.5 border-2 border-[#1a1a1a] dark:border-zinc-700 bg-white dark:bg-[#111113] hover:bg-[#ff4d00] hover:text-white dark:hover:bg-[#ff4d00] dark:hover:text-white text-[#1a1a1a] dark:text-white font-oswald uppercase text-sm font-bold shadow-[3px_3px_0_#1a1a1a] dark:shadow-[3px_3px_0_#000] active:translate-y-0.5 active:shadow-[1px_1px_0_#1a1a1a] transition-all cursor-pointer text-center"
+            >
+              Turn {darkMode ? 'Light' : 'Dark'} Mode On
+            </button>
+
+            {/* Close Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-full py-3 text-center font-mono text-xs uppercase font-bold text-[#1a1a1a]/50 dark:text-white/50 hover:text-[#1a1a1a] dark:hover:text-white cursor-pointer"
+            >
+              Close Menu
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
