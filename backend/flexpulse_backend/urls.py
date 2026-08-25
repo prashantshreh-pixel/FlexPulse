@@ -28,6 +28,10 @@ urlpatterns = [
     path('assets/<path:path>', serve, {
         'document_root': os.path.join(settings.BASE_DIR, '../dist/assets'),
     }),
+    # Explicitly serve public images from the Vite dist directory
+    path('images/<path:path>', serve, {
+        'document_root': os.path.join(settings.BASE_DIR, '../dist/images'),
+    }),
     # Catch-all to serve index.html for React router
     re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
 ]
