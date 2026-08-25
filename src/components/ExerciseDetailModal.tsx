@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
-import { Exercise, WeightUnit } from '../types';
-import { X, Plus, Info, ChevronDown, ChevronUp, Dumbbell } from 'lucide-react';
-// @ts-ignore
-import bicepCurlImg from './Barbell Bicep Curl.jpg';
-// @ts-ignore
-import bentOverRowImg from './Barbell Bent-Over Row.jpg';
-// @ts-ignore
-import conventionalDeadliftImg from './Barbell Conventional Deadlift.jpg';
+import { Exercise } from '../types';
+import { X, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ExerciseDetailModalProps {
   exercise: Exercise | null;
@@ -18,27 +12,7 @@ interface ExerciseDetailModalProps {
 
 // ── Exercise animation per muscle group ──────────────────────────────────────
 const AnimationBox: React.FC<{ muscleGroup: string; category: string; exerciseName: string }> = ({ muscleGroup, category, exerciseName }) => {
-  if (exerciseName.toLowerCase() === 'barbell bicep curl') {
-    return (
-      <div className="relative flex items-center justify-center rounded-none border-2 border-[#1a1a1a] overflow-hidden bg-white" style={{ height: '200px' }}>
-        <img src={bicepCurlImg} alt="Barbell Bicep Curl" className="w-full h-full object-contain" />
-      </div>
-    );
-  }
-  if (exerciseName.toLowerCase() === 'barbell bent-over row') {
-    return (
-      <div className="relative flex items-center justify-center rounded-none border-2 border-[#1a1a1a] overflow-hidden bg-white" style={{ height: '200px' }}>
-        <img src={bentOverRowImg} alt="Barbell Bent-Over Row" className="w-full h-full object-contain" />
-      </div>
-    );
-  }
-  if (exerciseName.toLowerCase() === 'barbell conventional deadlift') {
-    return (
-      <div className="relative flex items-center justify-center rounded-none border-2 border-[#1a1a1a] overflow-hidden bg-white" style={{ height: '200px' }}>
-        <img src={conventionalDeadliftImg} alt="Barbell Conventional Deadlift" className="w-full h-full object-contain" />
-      </div>
-    );
-  }
+  const [imageError, setImageError] = useState(false);
 
   const config: Record<string, { animation: string; color: string; bg: string; label: string; icon: string; gif: string }> = {
     Chest:     { animation: 'ex-push 1.8s ease-in-out infinite',    color: '#ef4444', bg: '#fef2f2', label: 'HORIZONTAL PUSH',   icon: '⇄', gif: 'https://media.giphy.com/media/3o6Ztp2VbvwP6G3fIk/giphy.gif' },
@@ -50,6 +24,25 @@ const AnimationBox: React.FC<{ muscleGroup: string; category: string; exerciseNa
   };
 
   const c = config[muscleGroup] || config.Chest;
+
+  if (!imageError) {
+    const getSanitizedName = (name: string) => {
+      if (name === 'Pec Deck / Chest Fly Machine') return 'Pec Deck,Chest Fly Machine';
+      if (name === 'Pull-Up / Chin-Up') return 'Pull-Up - Chin-Up';
+      return name;
+    };
+    const imageUrl = `/images/exercises/${getSanitizedName(exerciseName)}.jpg`;
+    return (
+      <div className="relative flex items-center justify-center rounded-none border-2 border-[#1a1a1a] overflow-hidden bg-white dark:bg-[#111113] p-2" style={{ height: '200px' }}>
+        <img 
+          src={imageUrl} 
+          alt={exerciseName} 
+          className="w-full h-full object-contain dark:invert dark:mix-blend-lighten"
+          onError={() => setImageError(true)} 
+        />
+      </div>
+    );
+  }
 
   return (
     <div
