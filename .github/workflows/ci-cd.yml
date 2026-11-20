@@ -1,0 +1,186 @@
+name: FlexPulse CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - SHINIGAMI
+  pull_request:
+    branches:
+      - main
+      - SHINIGAMI
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend-ci:
+    name: Frontend Lint, Audit & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Security audit (high/critical)
+        run: npm audit --audit-level=high
+
+      - name: TypeScript typecheck
+        run: npm run lint
+
+      - name: Production build
+        run: npm run build
+
+      - name: Verify production artifacts
+        run: |
+          test -f dist/index.html
+          test -f dist/favicon.svg
+          test -f dist/CNAME
+          if find dist -name '*.map' | grep -q .; then
+            echo "Unexpected source maps detected in dist/"
+            exit 1
+          fi
+
+      - name: Upload frontend build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist/
+          retention-days: 7
+
+  backend-ci:
+    name: Backend Security, Hygiene & Tests
+    needs: [frontend-ci]
+    runs-on: ubuntu-latest
+    env:
+      DJANGO_DEBUG: 'False'
+      DJANGO_ALLOWED_HOSTS: 'localhost,127.0.0.1,flexpulse.app,www.flexpulse.app'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download frontend dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist/
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+          cache-dependency-path: 'backend/requirements.txt'
+
+      - name: Install backend dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Codebase security and design hygiene check
+        run: |
+          python - << 'EOF'
+          import pathlib, re, sys
+
+          roots = [pathlib.Path('src'), pathlib.Path('backend/api'), pathlib.Path('backend/flexpulse_backend')]
+          files = [p for r in roots for p in r.rglob('*') if p.is_file() and '__pycache__' not in p.parts]
+          files += [pathlib.Path(x) for x in ['seed.json', 'index.html', 'vite.config.ts', 'metadata.json', 'README.md', 'package.json', 'backend/seed.py']]
+
+          checks = {
+              'em_or_en_dash': r'[\u2014\u2013]',
+              'purple_accent': r'#8b5cf6|#f5f3ff',
+              'fake_weekly_volume': r'38800',
+              'insecure_django': r'CORS_ALLOW_ALL_ORIGINS\s*=\s*True|^\s*DEBUG\s*=\s*True|django-insecure-',
+          }
+
+          failed = False
+          for name, pat in checks.items():
+              rx = re.compile(pat, re.MULTILINE)
+              for f in files:
+                  if name == 'insecure_django' and f.name == 'tests.py':
+                      continue
+                  text = f.read_text(encoding='utf-8', errors='ignore')
+                  for lineno, line in enumerate(text.splitlines(), 1):
+                      if rx.search(line):
+                          print(f"Hygiene failure [{name}] in {f}:{lineno}: {line.strip()}")
+                          failed = True
+          if failed:
+              sys.exit(1)
+          print("Hygiene checks passed.")
+          EOF
+
+      - name: Django system checks
+        run: python backend/manage.py check
+
+      - name: Verify no pending migrations
+        run: python backend/manage.py makemigrations --check --dry-run
+
+      - name: Apply migrations and seed database
+        run: |
+          python backend/manage.py migrate --noinput
+          python backend/seed.py
+
+      - name: Run automated API and security test suite
+        run: python backend/manage.py test api --verbosity=2
+
+  docker-and-deploy:
+    name: Package Container & Continuous Deployment
+    needs: [frontend-ci, backend-ci]
+    if: (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/SHINIGAMI')) || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build production Docker image
+        run: docker build -t flexpulse:${{ github.sha }} -t flexpulse:latest .
+
+      - name: Download frontend dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist/
+
+      - name: Package production release bundle
+        run: |
+          mkdir -p release_bundle
+          cp -r dist release_bundle/dist
+          cp -r backend release_bundle/backend
+          rm -rf release_bundle/backend/env release_bundle/backend/*.sqlite3 release_bundle/backend/.env
+          find release_bundle/backend -name '__pycache__' -type d -prune -exec rm -rf {} +
+          cp seed.json Dockerfile render.yaml .env.example release_bundle/
+
+      - name: Upload production release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flexpulse-production-release
+          path: release_bundle/
+          retention-days: 14
+
+      - name: Trigger deployment webhook (if configured)
+        env:
+          DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+        run: |
+          if [ -n "$DEPLOY_WEBHOOK_URL" ]; then
+            curl -fsSL -X POST "$DEPLOY_WEBHOOK_URL"
+            echo "Deployment webhook triggered successfully."
+          else
+            echo "No DEPLOY_WEBHOOK_URL secret configured; release artifact ready."
+          fi

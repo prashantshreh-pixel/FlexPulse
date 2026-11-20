@@ -20,6 +20,7 @@ venv/
 # Node & Vite
 node_modules/
 dist/
+release_bundle/
 *.log
 npm-debug.log*
 

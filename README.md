@@ -68,6 +68,14 @@ npm run build
 
 This generates an optimized production bundle (without source maps) in `dist/`, which Django serves directly.
 
+## CI/CD Pipeline & Deployment
+
+- **GitHub Actions (`.github/workflows/ci-cd.yml`)**: Automatically runs on every push and pull request to `main` and `SHINIGAMI`:
+  1. `frontend-ci`: Installs packages cleanly, runs `npm audit --audit-level=high`, TypeScript typechecking (`npm run lint`), Vite production build (`npm run build`), and verifies `dist/` artifacts with zero source maps.
+  2. `backend-ci`: Runs codebase security/hygiene checks, `manage.py check`, `makemigrations --check`, `migrate`, `seed.py`, and the automated API/security test suite (`manage.py test api`).
+  3. `docker-and-deploy`: Builds and verifies the multi-stage production Docker image (`Dockerfile`), packages a clean release bundle, and triggers `DEPLOY_WEBHOOK_URL` when configured.
+- **Container & Blueprint Deployment**: Includes a multi-stage `Dockerfile` and `render.yaml` Blueprint for zero-config cloud deployment.
+
 ## License
 
 This project is licensed under the MIT License.
