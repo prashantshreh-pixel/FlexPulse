@@ -1,0 +1,30 @@
+# Environment files
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+
+# Python & Django
+__pycache__/
+*.py[cod]
+*$py.class
+*.sqlite3
+*.sqlite3-journal
+db.sqlite3
+env/
+backend/env/
+.venv/
+venv/
+
+# Node & Vite
+node_modules/
+dist/
+*.log
+npm-debug.log*
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

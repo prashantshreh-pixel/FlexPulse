@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Exercise, MuscleGroup, WeightUnit } from '../types';
 import { ExerciseDetailModal } from './ExerciseDetailModal';
-import { Info, Plus } from 'lucide-react';
+import { Info } from 'lucide-react';
+import { sanitizeInput } from '../utils/security';
 
 interface ExerciseLibraryProps {
   exercises: Exercise[];
@@ -15,10 +16,10 @@ const MUSCLE_COLORS: Record<MuscleGroup, string> = {
   Legs:      '#10b981',
   Shoulders: '#f59e0b',
   Arms:      '#f97316',
-  Core:      '#8b5cf6',
+  Core:      '#0d9488',
 };
 
-export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, weightUnit = 'lbs', onAddExercise }) => {
+export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, onAddExercise }) => {
   const [searchQuery, setSearchQuery]   = useState('');
   const [selectedMuscle, setSelectedMuscle] = useState<string>('All');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -28,7 +29,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, wei
   const categoryOptions = ['All', 'Compound', 'Isolation'];
 
   const filtered = exercises.filter(ex => {
-    const q = searchQuery.toLowerCase();
+    const q = searchQuery.trim().toLowerCase();
     const matchSearch = ex.name.toLowerCase().includes(q) || ex.muscleGroup.toLowerCase().includes(q) || ex.equipment.toLowerCase().includes(q);
     const matchMuscle   = selectedMuscle === 'All'   || ex.muscleGroup === selectedMuscle;
     const matchCategory = selectedCategory === 'All' || ex.category   === selectedCategory;
@@ -48,7 +49,7 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, wei
           <p className="font-mono text-xs uppercase font-bold text-[#ff4d00]">Exercise Database</p>
           <h2 className="font-oswald text-4xl font-semibold uppercase text-[#1a1a1a] mt-1">Exercise Library</h2>
           <p className="font-mono text-xs text-[#1a1a1a]/60 mt-1">
-            {exercises.length} exercises — click any card to see full details & proper form before adding
+            {exercises.length} exercises - click any card to see full details &amp; proper form before adding
           </p>
         </div>
         <div className="font-mono text-[0.6rem] text-[#1a1a1a]/50 uppercase font-bold text-right">
@@ -60,8 +61,9 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, wei
       <div className="border-2 border-[#1a1a1a] p-4 bg-white shadow-[2px_2px_0_#1a1a1a] flex flex-col gap-3">
         <input
           type="text"
+          maxLength={80}
           value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(sanitizeInput(e.target.value, 80))}
           placeholder="Search by name, muscle group, or equipment..."
           className="border-2 border-[#1a1a1a] p-2.5 font-mono text-sm w-full bg-white"
         />
@@ -69,25 +71,37 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, wei
           <div className="flex gap-1.5 flex-wrap">
             <span className="font-mono text-[0.6rem] uppercase font-bold text-[#1a1a1a]/50 self-center pr-1">Muscle:</span>
             {muscleOptions.map(m => (
-              <button key={m} onClick={() => setSelectedMuscle(m)}
+              <button
+                type="button"
+                key={m}
+                onClick={() => setSelectedMuscle(m)}
                 className={`font-mono text-[0.65rem] px-2.5 py-1 uppercase font-semibold transition cursor-pointer border whitespace-nowrap ${
                   selectedMuscle === m ? 'bg-[#1a1a1a] text-white border-[#1a1a1a]' : 'border-[#1a1a1a] text-[#1a1a1a]/70 hover:text-[#1a1a1a]'
-                }`}>{m}</button>
+                }`}
+              >
+                {m}
+              </button>
             ))}
           </div>
           <div className="flex gap-1.5">
             <span className="font-mono text-[0.6rem] uppercase font-bold text-[#1a1a1a]/50 self-center pr-1">Type:</span>
             {categoryOptions.map(c => (
-              <button key={c} onClick={() => setSelectedCategory(c)}
+              <button
+                type="button"
+                key={c}
+                onClick={() => setSelectedCategory(c)}
                 className={`font-mono text-[0.65rem] px-2.5 py-1 uppercase font-semibold transition cursor-pointer border whitespace-nowrap ${
                   selectedCategory === c ? 'bg-[#1a1a1a] text-white border-[#1a1a1a]' : 'border-[#1a1a1a] text-[#1a1a1a]/70 hover:text-[#1a1a1a]'
-                }`}>{c}</button>
+                }`}
+              >
+                {c}
+              </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Exercise grid — grouped by muscle */}
+      {/* Exercise grid grouped by muscle */}
       {Object.entries(grouped).map(([muscleGroup, exListRaw]) => {
         const exList = exListRaw as Exercise[];
         const color = MUSCLE_COLORS[muscleGroup as MuscleGroup] || '#1a1a1a';
@@ -106,7 +120,6 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, wei
                   className="group border-2 border-[#1a1a1a] bg-white hover:shadow-[4px_4px_0_#1a1a1a] transition-all cursor-pointer"
                   onClick={() => setDetailExercise(ex)}
                 >
-                  {/* Color accent top bar */}
                   <div className="h-1" style={{ backgroundColor: color }} />
 
                   <div className="p-4 space-y-3">
@@ -116,9 +129,11 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, wei
                       </h4>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <span className="font-mono text-[0.55rem] uppercase font-bold text-[#1a1a1a]/50">{ex.equipment}</span>
-                        <span className="font-mono text-[0.55rem] text-[#1a1a1a]/30">•</span>
-                        <span className="font-mono text-[0.55rem] uppercase font-bold"
-                          style={{ color: ex.category === 'Compound' ? '#ff4d00' : '#6b7280' }}>
+                        <span className="font-mono text-[0.55rem] text-[#1a1a1a]/30">|</span>
+                        <span
+                          className="font-mono text-[0.55rem] uppercase font-bold"
+                          style={{ color: ex.category === 'Compound' ? '#ff4d00' : '#6b7280' }}
+                        >
                           {ex.category}
                         </span>
                       </div>
@@ -128,9 +143,9 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, wei
                       {ex.instructions}
                     </p>
 
-                    {/* Actions */}
                     <div className="pt-1 border-t border-[#1a1a1a]/10 flex justify-center">
                       <button
+                        type="button"
                         onClick={e => { e.stopPropagation(); setDetailExercise(ex); }}
                         className="w-full flex items-center justify-center gap-1.5 font-mono text-[0.6rem] uppercase font-bold bg-[#1a1a1a] text-[#f8f7f4] py-1.5 hover:bg-[#ff4d00] transition cursor-pointer"
                       >
@@ -151,7 +166,6 @@ export const ExerciseLibrary: React.FC<ExerciseLibraryProps> = ({ exercises, wei
         </div>
       )}
 
-      {/* Exercise detail modal */}
       <ExerciseDetailModal
         exercise={detailExercise}
         isOpen={detailExercise !== null}

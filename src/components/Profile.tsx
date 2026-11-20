@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, ShieldAlert, Award, FileText, CheckCircle2, Dumbbell, Upload, Save, HelpCircle, Edit3, X, Ruler } from 'lucide-react';
+import { User, Award, Dumbbell, Upload, Save, HelpCircle, Edit3, X, Ruler } from 'lucide-react';
 import { WorkoutProgram, PersonalRecord } from '../types';
+import {
+  MAX_IMAGE_FILE_BYTES,
+  formatApiError,
+  isValidImageSrc,
+  isValidUsername,
+  sanitizeInput,
+  sanitizeText,
+} from '../utils/security';
 
 interface ProfileProps {
   token: string | null;
@@ -9,6 +17,7 @@ interface ProfileProps {
   activeRoutineId: string | null;
   onActivateRoutine: (id: string | null) => void;
   prs: PersonalRecord[];
+  onUnauthorized?: () => void;
 }
 
 interface ProfileFields {
@@ -21,8 +30,6 @@ interface ProfileFields {
     bio: string;
     profile_picture: string;
     background_picture: string;
-    
-    // Gym & Fitness Metrics
     height: string;
     weight: string;
     body_fat: string;
@@ -34,13 +41,15 @@ interface ProfileFields {
   };
 }
 
+const ALLOWED_IMAGE_MIME = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+
 export const Profile: React.FC<ProfileProps> = ({
   token,
   username,
   programs,
   activeRoutineId,
   onActivateRoutine,
-  prs
+  onUnauthorized,
 }) => {
   const [profileData, setProfileData] = useState<ProfileFields>({
     username: username || '',
@@ -59,8 +68,8 @@ export const Profile: React.FC<ProfileProps> = ({
       waist: '',
       biceps: '',
       thighs: '',
-      calves: ''
-    }
+      calves: '',
+    },
   });
 
   const [originalData, setOriginalData] = useState<ProfileFields | null>(null);
@@ -69,19 +78,22 @@ export const Profile: React.FC<ProfileProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
-  // Fetch profile data on mount
   useEffect(() => {
     async function getProfile() {
       if (!token) return;
       try {
         const res = await fetch('/api/profile/', {
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
+        if (res.status === 401 || res.status === 403) {
+          onUnauthorized?.();
+          return;
+        }
         if (res.ok) {
           const data = await res.json();
-          const loaded = {
+          const loaded: ProfileFields = {
             username: data.username || '',
             email: data.email || '',
             password: '',
@@ -89,10 +101,8 @@ export const Profile: React.FC<ProfileProps> = ({
               preferred_unit: data.profile?.preferred_unit || 'lbs',
               default_rest_duration: data.profile?.default_rest_duration || 90,
               bio: data.profile?.bio || '',
-              profile_picture: data.profile?.profile_picture || '',
-              background_picture: data.profile?.background_picture || '',
-              
-              // Fitness metrics
+              profile_picture: isValidImageSrc(data.profile?.profile_picture || '') ? data.profile.profile_picture : '',
+              background_picture: isValidImageSrc(data.profile?.background_picture || '') ? data.profile.background_picture : '',
               height: data.profile?.height || '',
               weight: data.profile?.weight || '',
               body_fat: data.profile?.body_fat || '',
@@ -100,33 +110,49 @@ export const Profile: React.FC<ProfileProps> = ({
               waist: data.profile?.waist || '',
               biceps: data.profile?.biceps || '',
               thighs: data.profile?.thighs || '',
-              calves: data.profile?.calves || ''
-            }
+              calves: data.profile?.calves || '',
+            },
           };
           setProfileData(loaded);
           setOriginalData(loaded);
         }
       } catch (err) {
-        console.error("Failed to load user profile:", err);
+        console.error('Failed to load user profile:', err);
       } finally {
         setIsLoading(false);
       }
     }
     getProfile();
-  }, [token]);
+  }, [token, onUnauthorized]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'bg') => {
-    if (!isEditing) return; // Only allow picture uploads when in edit mode
+    if (!isEditing) return;
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!ALLOWED_IMAGE_MIME.includes(file.type)) {
+      setMessage({ text: 'Only PNG, JPEG, WEBP, or GIF images are supported.', type: 'error' });
+      return;
+    }
+    if (file.size > MAX_IMAGE_FILE_BYTES) {
+      setMessage({ text: 'Image file size must be 2MB or smaller.', type: 'error' });
+      return;
+    }
+
     const reader = new FileReader();
     reader.onloadend = () => {
+      const result = typeof reader.result === 'string' ? reader.result : '';
+      if (!isValidImageSrc(result)) {
+        setMessage({ text: 'Invalid image data detected.', type: 'error' });
+        return;
+      }
+      setMessage(null);
       setProfileData(prev => ({
         ...prev,
         profile: {
           ...prev.profile,
-          [type === 'avatar' ? 'profile_picture' : 'background_picture']: reader.result as string
-        }
+          [type === 'avatar' ? 'profile_picture' : 'background_picture']: result,
+        },
       }));
     };
     reader.readAsDataURL(file);
@@ -142,14 +168,32 @@ export const Profile: React.FC<ProfileProps> = ({
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSaving(true);
     setMessage(null);
+
+    const cleanUsername = sanitizeText(profileData.username, 30);
+    const cleanEmail = sanitizeText(profileData.email, 254).toLowerCase();
+    const cleanBio = sanitizeText(profileData.bio, 500);
+
+    if (!isValidUsername(cleanUsername)) {
+      setMessage({
+        text: 'Username must be 3-30 characters using letters, numbers, _, -, or . only.',
+        type: 'error',
+      });
+      return;
+    }
+    if (profileData.password && profileData.password.length < 8) {
+      setMessage({ text: 'New password must be at least 8 characters.', type: 'error' });
+      return;
+    }
+
+    setIsSaving(true);
     try {
-      const payload: any = {
-        username: profileData.username,
-        email: profileData.email,
+      const payload: Record<string, unknown> = {
+        username: cleanUsername,
+        email: cleanEmail,
         profile: {
           ...profileData.profile,
+          bio: cleanBio,
           height: profileData.profile.height || null,
           weight: profileData.profile.weight || null,
           body_fat: profileData.profile.body_fat || null,
@@ -157,8 +201,8 @@ export const Profile: React.FC<ProfileProps> = ({
           waist: profileData.profile.waist || null,
           biceps: profileData.profile.biceps || null,
           thighs: profileData.profile.thighs || null,
-          calves: profileData.profile.calves || null
-        }
+          calves: profileData.profile.calves || null,
+        },
       };
       if (profileData.password) {
         payload.password = profileData.password;
@@ -168,23 +212,37 @@ export const Profile: React.FC<ProfileProps> = ({
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
+      if (res.status === 401 || res.status === 403) {
+        onUnauthorized?.();
+        return;
+      }
+
       if (res.ok) {
-        setMessage({ text: 'Profile metrics updated successfully!', type: 'success' });
-        const updated = { ...profileData, password: '' };
+        setMessage({ text: 'Profile metrics updated successfully.', type: 'success' });
+        const updated: ProfileFields = {
+          ...profileData,
+          username: cleanUsername,
+          email: cleanEmail,
+          password: '',
+          profile: {
+            ...profileData.profile,
+            bio: cleanBio,
+          },
+        };
         setProfileData(updated);
         setOriginalData(updated);
         setIsEditing(false);
       } else {
-        const errData = await res.json();
-        setMessage({ text: errData.detail || 'Failed to update profile details', type: 'error' });
+        const errData = await res.json().catch(() => ({}));
+        setMessage({ text: formatApiError(errData, 'Failed to update profile details.'), type: 'error' });
       }
-    } catch (err) {
-      setMessage({ text: 'Error connecting to server', type: 'error' });
+    } catch {
+      setMessage({ text: 'Error connecting to server.', type: 'error' });
     } finally {
       setIsSaving(false);
     }
@@ -192,19 +250,15 @@ export const Profile: React.FC<ProfileProps> = ({
 
   const activeProgram = programs.find(p => String(p.id) === String(activeRoutineId));
 
-  // Dynamic Calculations
   const heightCm = parseFloat(profileData.profile.height) || 0;
   const weightVal = parseFloat(profileData.profile.weight) || 0;
   const bodyFatVal = parseFloat(profileData.profile.body_fat) || 0;
   const waistIn = parseFloat(profileData.profile.waist) || 0;
 
   const preferredUnit = profileData.profile.preferred_unit;
-
-  // Convert weight to kg for calculations
   const weightKg = preferredUnit === 'lbs' ? weightVal / 2.205 : weightVal;
   const heightM = heightCm / 100;
 
-  // Calculate BMI
   let bmi: number | null = null;
   let bmiCategory = '';
   let bmiColor = '';
@@ -225,7 +279,6 @@ export const Profile: React.FC<ProfileProps> = ({
     }
   }
 
-  // Calculate FFMI (Fat-Free Mass Index)
   let ffmi: number | null = null;
   let ffmiCategory = '';
   if (heightCm > 0 && weightVal > 0 && bodyFatVal > 0) {
@@ -235,10 +288,9 @@ export const Profile: React.FC<ProfileProps> = ({
     else if (ffmi < 20) ffmiCategory = 'Average / Fit';
     else if (ffmi < 22) ffmiCategory = 'Above Average';
     else if (ffmi < 25) ffmiCategory = 'Excellent';
-    else ffmiCategory = 'Genetic Limit / Superior';
+    else ffmiCategory = 'Superior';
   }
 
-  // Calculate Waist-to-Height Ratio
   let waistToHeight: number | null = null;
   let waistToHeightText = '';
   if (heightCm > 0 && waistIn > 0) {
@@ -259,67 +311,66 @@ export const Profile: React.FC<ProfileProps> = ({
   }
 
   const metricFields = [
-    { key: 'height',   label: 'Height',     suffix: 'cm',       step: '0.1' },
-    { key: 'weight',   label: 'Weight',     suffix: profileData.profile.preferred_unit, step: '0.1' },
-    { key: 'body_fat', label: 'Body Fat',   suffix: '%',        step: '0.1' },
-    { key: 'chest',    label: 'Chest Size', suffix: 'in',       step: '0.01' },
-    { key: 'waist',    label: 'Waist Size', suffix: 'in',       step: '0.01' },
-    { key: 'biceps',   label: 'Biceps',     suffix: 'in',       step: '0.01' },
-    { key: 'thighs',   label: 'Thighs',     suffix: 'in',       step: '0.01' },
-    { key: 'calves',   label: 'Calves',     suffix: 'in',       step: '0.01' },
-  ];
+    { key: 'height',   label: 'Height',     suffix: 'cm',                             step: '0.1',  min: 50, max: 300 },
+    { key: 'weight',   label: 'Weight',     suffix: profileData.profile.preferred_unit, step: '0.1', min: 20, max: 999 },
+    { key: 'body_fat', label: 'Body Fat',   suffix: '%',                              step: '0.1',  min: 2,  max: 75 },
+    { key: 'chest',    label: 'Chest Size', suffix: 'in',                             step: '0.01', min: 10, max: 100 },
+    { key: 'waist',    label: 'Waist Size', suffix: 'in',                             step: '0.01', min: 10, max: 100 },
+    { key: 'biceps',   label: 'Biceps',     suffix: 'in',                             step: '0.01', min: 4,  max: 40 },
+    { key: 'thighs',   label: 'Thighs',     suffix: 'in',                             step: '0.01', min: 10, max: 60 },
+    { key: 'calves',   label: 'Calves',     suffix: 'in',                             step: '0.01', min: 5,  max: 40 },
+  ] as const;
+
+  const hasValidCover = isValidImageSrc(profileData.profile.background_picture);
+  const hasValidAvatar = isValidImageSrc(profileData.profile.profile_picture);
 
   return (
     <div className="select-none max-w-6xl mx-auto w-full flex flex-col gap-8">
-      
       {/* Cover / Background Picture */}
       <div className="relative border-4 border-[#1a1a1a] shadow-[6px_6px_0_#1a1a1a] bg-zinc-200 dark:bg-zinc-800 h-48 md:h-64 overflow-hidden flex items-center justify-center">
-        {profileData.profile.background_picture ? (
-          <img 
-            src={profileData.profile.background_picture} 
-            alt="Profile Background" 
+        {hasValidCover ? (
+          <img
+            src={profileData.profile.background_picture}
+            alt="Profile Background"
             className="w-full h-full object-cover"
           />
         ) : (
           <div className="text-[#1a1a1a]/30 dark:text-white/20 font-mono text-sm uppercase">No Cover Background Photo</div>
         )}
-        
-        {/* Edit Cover Trigger */}
+
         {isEditing && (
           <label className="absolute bottom-4 right-4 bg-white border-2 border-[#1a1a1a] hover:bg-[#ff4d00] hover:text-white px-3 py-1.5 font-mono text-[0.65rem] font-bold uppercase transition flex items-center gap-1.5 shadow-[2px_2px_0_#1a1a1a] cursor-pointer text-[#1a1a1a]">
             <Upload className="w-3 h-3" />
             Upload Cover
-            <input 
-              type="file" 
-              accept="image/*" 
-              className="hidden" 
-              onChange={e => handleImageUpload(e, 'bg')} 
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              className="hidden"
+              onChange={e => handleImageUpload(e, 'bg')}
             />
           </label>
         )}
-        
-        {/* Avatar / Profile Picture */}
+
         <div className="absolute -bottom-8 left-6 md:left-10 w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-[#1a1a1a] bg-[#f8f7f4] dark:bg-[#111113] shadow-[4px_4px_0_#1a1a1a] overflow-hidden flex items-center justify-center group">
-          {profileData.profile.profile_picture ? (
-            <img 
-              src={profileData.profile.profile_picture} 
-              alt="Profile Avatar" 
+          {hasValidAvatar ? (
+            <img
+              src={profileData.profile.profile_picture}
+              alt="Profile Avatar"
               className="w-full h-full object-cover"
             />
           ) : (
             <User className="w-12 h-12 text-[#1a1a1a]/40 dark:text-white/40" />
           )}
-          
-          {/* Avatar Upload Overlay */}
+
           {isEditing && (
             <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white cursor-pointer transition-opacity">
               <Upload className="w-4 h-4 mb-1" />
               <span className="font-mono text-[9px] uppercase font-bold">Upload</span>
-              <input 
-                type="file" 
-                accept="image/*" 
-                className="hidden" 
-                onChange={e => handleImageUpload(e, 'avatar')} 
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                className="hidden"
+                onChange={e => handleImageUpload(e, 'avatar')}
               />
             </label>
           )}
@@ -327,11 +378,7 @@ export const Profile: React.FC<ProfileProps> = ({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start mt-4">
-        
-        {/* Column 1: Account Settings / Edit Form */}
         <div className="lg:col-span-2 flex flex-col gap-8">
-          
-          {/* Account Settings Card */}
           <div className="bg-white dark:bg-[#151518] border-4 border-[#1a1a1a] shadow-[8px_8px_0_#1a1a1a] p-6 md:p-8">
             <div className="flex justify-between items-center mb-6 border-b border-zinc-200 dark:border-zinc-800 pb-4">
               <h2 className="font-oswald text-2xl font-bold uppercase tracking-tight flex items-center gap-2 text-[#1a1a1a] dark:text-white">
@@ -339,8 +386,8 @@ export const Profile: React.FC<ProfileProps> = ({
                 Account Settings
               </h2>
               {!isEditing ? (
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setIsEditing(true)}
                   className="bg-white hover:bg-[#ff4d00] hover:text-white border-2 border-[#1a1a1a] px-3.5 py-1.5 font-mono text-xs font-bold uppercase transition flex items-center gap-1.5 shadow-[3px_3px_0_#1a1a1a] cursor-pointer text-[#1a1a1a]"
                 >
@@ -348,8 +395,8 @@ export const Profile: React.FC<ProfileProps> = ({
                   Edit Profile
                 </button>
               ) : (
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={handleCancel}
                   className="bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border-2 border-[#1a1a1a] px-3.5 py-1.5 font-mono text-xs font-bold uppercase transition flex items-center gap-1.5 shadow-[3px_3px_0_#1a1a1a] cursor-pointer text-[#1a1a1a] dark:text-white"
                 >
@@ -360,11 +407,13 @@ export const Profile: React.FC<ProfileProps> = ({
             </div>
 
             {message && (
-              <div className={`font-mono text-xs border-2 p-3 mb-6 font-bold ${
-                message.type === 'success' 
-                  ? 'bg-emerald-100 text-emerald-700 border-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-500' 
-                  : 'bg-red-100 text-red-700 border-red-600 dark:bg-red-950/30 dark:text-red-400 dark:border-red-500'
-              }`}>
+              <div
+                className={`font-mono text-xs border-2 p-3 mb-6 font-bold ${
+                  message.type === 'success'
+                    ? 'bg-emerald-100 text-emerald-700 border-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-500'
+                    : 'bg-red-100 text-red-700 border-red-600 dark:bg-red-950/30 dark:text-red-400 dark:border-red-500'
+                }`}
+              >
                 {message.text}
               </div>
             )}
@@ -373,12 +422,13 @@ export const Profile: React.FC<ProfileProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className="font-mono text-xs uppercase font-bold text-[#1a1a1a]/60 dark:text-white/60 block mb-1">Username</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     required
+                    maxLength={30}
                     disabled={!isEditing}
                     value={profileData.username}
-                    onChange={e => setProfileData({ ...profileData, username: e.target.value })}
+                    onChange={e => setProfileData({ ...profileData, username: sanitizeInput(e.target.value, 30) })}
                     className={`w-full bg-[#f8f7f4] dark:bg-[#202024] border-2 border-[#1a1a1a] dark:border-zinc-700 px-4 py-2.5 font-mono text-sm focus:outline-none focus:border-[#ff4d00] dark:text-white transition-colors ${
                       !isEditing ? 'opacity-65 cursor-not-allowed bg-zinc-100 dark:bg-zinc-900 border-dashed' : ''
                     }`}
@@ -387,11 +437,12 @@ export const Profile: React.FC<ProfileProps> = ({
 
                 <div>
                   <label className="font-mono text-xs uppercase font-bold text-[#1a1a1a]/60 dark:text-white/60 block mb-1">Email Address</label>
-                  <input 
-                    type="email" 
+                  <input
+                    type="email"
+                    maxLength={254}
                     disabled={!isEditing}
                     value={profileData.email}
-                    onChange={e => setProfileData({ ...profileData, email: e.target.value })}
+                    onChange={e => setProfileData({ ...profileData, email: sanitizeInput(e.target.value, 254) })}
                     className={`w-full bg-[#f8f7f4] dark:bg-[#202024] border-2 border-[#1a1a1a] dark:border-zinc-700 px-4 py-2.5 font-mono text-sm focus:outline-none focus:border-[#ff4d00] dark:text-white transition-colors ${
                       !isEditing ? 'opacity-65 cursor-not-allowed bg-zinc-100 dark:bg-zinc-900 border-dashed' : ''
                     }`}
@@ -404,12 +455,14 @@ export const Profile: React.FC<ProfileProps> = ({
                   <label className="font-mono text-xs uppercase font-bold text-[#1a1a1a]/60 dark:text-white/60 block mb-1">
                     Change Password <span className="text-[10px] text-zinc-400 font-normal">(Leave blank to keep current)</span>
                   </label>
-                  <input 
-                    type="password" 
+                  <input
+                    type="password"
+                    minLength={8}
+                    maxLength={128}
                     disabled={!isEditing}
                     value={profileData.password || ''}
                     onChange={e => setProfileData({ ...profileData, password: e.target.value })}
-                    placeholder={isEditing ? "Enter new password" : "••••••••••••"}
+                    placeholder={isEditing ? 'Enter new password (8+ chars)' : '********'}
                     className={`w-full bg-[#f8f7f4] dark:bg-[#202024] border-2 border-[#1a1a1a] dark:border-zinc-700 px-4 py-2.5 font-mono text-sm focus:outline-none focus:border-[#ff4d00] dark:text-white transition-colors ${
                       !isEditing ? 'opacity-65 cursor-not-allowed bg-zinc-100 dark:bg-zinc-900 border-dashed' : ''
                     }`}
@@ -421,10 +474,12 @@ export const Profile: React.FC<ProfileProps> = ({
                   <select
                     disabled={!isEditing}
                     value={profileData.profile.preferred_unit}
-                    onChange={e => setProfileData({
-                      ...profileData,
-                      profile: { ...profileData.profile, preferred_unit: e.target.value }
-                    })}
+                    onChange={e =>
+                      setProfileData({
+                        ...profileData,
+                        profile: { ...profileData.profile, preferred_unit: e.target.value },
+                      })
+                    }
                     className={`w-full bg-[#f8f7f4] dark:bg-[#202024] border-2 border-[#1a1a1a] dark:border-zinc-700 px-4 py-3 font-mono text-sm focus:outline-none focus:border-[#ff4d00] dark:text-white transition-colors ${
                       !isEditing ? 'opacity-65 cursor-not-allowed bg-zinc-100 dark:bg-zinc-900 border-dashed' : ''
                     }`}
@@ -437,16 +492,18 @@ export const Profile: React.FC<ProfileProps> = ({
 
               <div>
                 <label className="font-mono text-xs uppercase font-bold text-[#1a1a1a]/60 dark:text-white/60 block mb-1">Bio / Training Philosophy</label>
-                <textarea 
+                <textarea
                   disabled={!isEditing}
                   value={profileData.profile.bio}
-                  onChange={e => setProfileData({
-                    ...profileData,
-                    profile: { ...profileData.profile, bio: e.target.value }
-                  })}
+                  onChange={e =>
+                    setProfileData({
+                      ...profileData,
+                      profile: { ...profileData.profile, bio: sanitizeInput(e.target.value, 500) },
+                    })
+                  }
                   rows={4}
                   maxLength={500}
-                  placeholder="Describe your training goals, target splits, or dynamic routines..."
+                  placeholder="Describe your training goals, target splits, or active programs..."
                   className={`w-full bg-[#f8f7f4] dark:bg-[#202024] border-2 border-[#1a1a1a] dark:border-zinc-700 px-4 py-2.5 font-mono text-sm focus:outline-none focus:border-[#ff4d00] dark:text-white transition-colors resize-none ${
                     !isEditing ? 'opacity-65 cursor-not-allowed bg-zinc-100 dark:bg-zinc-900 border-dashed' : ''
                   }`}
@@ -458,11 +515,10 @@ export const Profile: React.FC<ProfileProps> = ({
             </form>
           </div>
 
-          {/* Fitness & Body Measurements Card */}
           <div className="bg-white dark:bg-[#151518] border-4 border-[#1a1a1a] shadow-[8px_8px_0_#1a1a1a] p-6 md:p-8">
             <h2 className="font-oswald text-2xl font-bold uppercase mb-6 tracking-tight flex items-center gap-2 text-[#1a1a1a] dark:text-white border-b border-zinc-200 dark:border-zinc-800 pb-4">
               <Ruler className="w-6 h-6 text-[#ff4d00]" />
-              Fitness & Dimensions
+              Fitness &amp; Dimensions
             </h2>
 
             <form onSubmit={handleSave} className="flex flex-col gap-5">
@@ -472,15 +528,19 @@ export const Profile: React.FC<ProfileProps> = ({
                     <label className="font-mono text-[10px] uppercase font-bold text-[#1a1a1a]/60 dark:text-white/60 block mb-1">
                       {field.label} ({field.suffix})
                     </label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
+                      min={field.min}
+                      max={field.max}
                       step={field.step}
                       disabled={!isEditing}
-                      value={(profileData.profile as any)[field.key] || ''}
-                      onChange={e => setProfileData({
-                        ...profileData,
-                        profile: { ...profileData.profile, [field.key]: e.target.value }
-                      })}
+                      value={(profileData.profile as Record<string, string | number>)[field.key] || ''}
+                      onChange={e =>
+                        setProfileData({
+                          ...profileData,
+                          profile: { ...profileData.profile, [field.key]: e.target.value },
+                        })
+                      }
                       placeholder="--"
                       className={`w-full bg-[#f8f7f4] dark:bg-[#202024] border-2 border-[#1a1a1a] dark:border-zinc-700 px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#ff4d00] dark:text-white transition-colors ${
                         !isEditing ? 'opacity-65 cursor-not-allowed bg-zinc-150 dark:bg-zinc-900 border-dashed text-[#1a1a1a]/80 dark:text-white/80' : ''
@@ -491,8 +551,8 @@ export const Profile: React.FC<ProfileProps> = ({
               </div>
 
               {isEditing && (
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={isSaving}
                   className="action-btn primary w-full justify-center py-4 text-base font-bold uppercase transition mt-4"
                 >
@@ -502,19 +562,15 @@ export const Profile: React.FC<ProfileProps> = ({
               )}
             </form>
           </div>
-
         </div>
 
-        {/* Column 2: Active Plan & PR Summary */}
         <div className="flex flex-col gap-6">
-          
-          {/* Active Workout Program */}
           <div className="bg-white dark:bg-[#151518] border-4 border-[#1a1a1a] shadow-[8px_8px_0_#1a1a1a] p-6">
             <h3 className="font-oswald text-xl font-bold uppercase mb-4 tracking-tight flex items-center gap-2 text-[#1a1a1a] dark:text-white">
               <Dumbbell className="w-5 h-5 text-[#ff4d00]" />
               Active Routine
             </h3>
-            
+
             {activeProgram ? (
               <div className="flex flex-col gap-3">
                 <div className="p-4 bg-[#f8f7f4] dark:bg-[#202024] border-2 border-[#1a1a1a] dark:border-zinc-700">
@@ -524,7 +580,8 @@ export const Profile: React.FC<ProfileProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2 mt-2">
-                  <button 
+                  <button
+                    type="button"
                     onClick={() => onActivateRoutine(null)}
                     className="flex-1 font-mono text-xs font-bold uppercase bg-red-100 hover:bg-red-200 text-red-700 border-2 border-red-700 py-2.5 transition cursor-pointer text-center"
                   >
@@ -540,7 +597,6 @@ export const Profile: React.FC<ProfileProps> = ({
             )}
           </div>
 
-          {/* Fitness Calculations & Tracker */}
           <div className="bg-white dark:bg-[#151518] border-4 border-[#1a1a1a] shadow-[8px_8px_0_#1a1a1a] p-6 flex-1">
             <h3 className="font-oswald text-xl font-bold uppercase mb-4 tracking-tight flex items-center gap-2 text-[#1a1a1a] dark:text-white border-b border-zinc-200 dark:border-zinc-800 pb-2">
               <Award className="w-5 h-5 text-[#ff4d00]" />
@@ -548,7 +604,6 @@ export const Profile: React.FC<ProfileProps> = ({
             </h3>
 
             <div className="flex flex-col gap-4 mt-4">
-              {/* BMI Section */}
               <div className="p-4 bg-[#f8f7f4] dark:bg-[#202024] border-2 border-[#1a1a1a] dark:border-zinc-700">
                 <div className="flex justify-between items-start">
                   <span className="font-mono text-[10px] uppercase font-bold text-[#1a1a1a]/60 dark:text-white/60">Body Mass Index (BMI)</span>
@@ -560,14 +615,13 @@ export const Profile: React.FC<ProfileProps> = ({
                 </div>
                 {bmi !== null ? (
                   <p className="font-oswald text-3xl font-bold text-[#1a1a1a] dark:text-white mt-1">
-                    {bmi} <span className="font-mono text-xs font-normal text-[#1a1a1a]/50 dark:text-white/50">kg/m²</span>
+                    {bmi} <span className="font-mono text-xs font-normal text-[#1a1a1a]/50 dark:text-white/50">kg/m2</span>
                   </p>
                 ) : (
                   <p className="font-mono text-xs text-[#1a1a1a]/40 dark:text-white/40 mt-1">Add Height and Weight to calculate</p>
                 )}
               </div>
 
-              {/* FFMI Section */}
               <div className="p-4 bg-[#f8f7f4] dark:bg-[#202024] border-2 border-[#1a1a1a] dark:border-zinc-700">
                 <div className="flex justify-between items-start">
                   <span className="font-mono text-[10px] uppercase font-bold text-[#1a1a1a]/60 dark:text-white/60">Fat-Free Mass Index (FFMI)</span>
@@ -586,7 +640,6 @@ export const Profile: React.FC<ProfileProps> = ({
                 )}
               </div>
 
-              {/* Waist-to-Height Ratio Section */}
               <div className="p-4 bg-[#f8f7f4] dark:bg-[#202024] border-2 border-[#1a1a1a] dark:border-zinc-700">
                 <div className="flex justify-between items-start">
                   <span className="font-mono text-[10px] uppercase font-bold text-[#1a1a1a]/60 dark:text-white/60">Waist-to-Height Ratio</span>
@@ -606,7 +659,6 @@ export const Profile: React.FC<ProfileProps> = ({
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>

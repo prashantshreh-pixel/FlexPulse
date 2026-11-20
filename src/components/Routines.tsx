@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { WorkoutProgram, Exercise, WorkoutDay } from '../types';
 import { Settings, Play, Plus, Trash2, ArrowLeft, GripVertical } from 'lucide-react';
+import { clampNumber, sanitizeInput, sanitizeText } from '../utils/security';
 
 interface RoutinesProps {
   programs: WorkoutProgram[];
@@ -22,7 +23,7 @@ export const Routines: React.FC<RoutinesProps> = ({
   const [buildName, setBuildName] = useState('');
   const [buildDesc, setBuildDesc] = useState('');
   const [buildDays, setBuildDays] = useState<WorkoutDay[]>([]);
-  
+
   // Builder selected day index to add exercises to
   const [activeDayIndex, setActiveDayIndex] = useState<number>(0);
 
@@ -31,7 +32,7 @@ export const Routines: React.FC<RoutinesProps> = ({
     setActiveView('detail');
   };
 
-  // ── BUILDER LOGIC ──────────────────────────────────────────────────────────
+  // BUILDER LOGIC
   const handleAddDay = () => {
     const newDay: WorkoutDay = {
       id: `day-${Date.now()}`,
@@ -44,7 +45,10 @@ export const Routines: React.FC<RoutinesProps> = ({
 
   const handleUpdateDayName = (index: number, name: string) => {
     const updated = [...buildDays];
-    updated[index].name = name;
+    updated[index] = {
+      ...updated[index],
+      name: sanitizeInput(name, 60),
+    };
     setBuildDays(updated);
   };
 
@@ -59,55 +63,86 @@ export const Routines: React.FC<RoutinesProps> = ({
 
   const handleAddExerciseToDay = (dayIndex: number, exerciseId: string) => {
     const updated = [...buildDays];
-    updated[dayIndex].exercises.push({
-      exerciseId,
-      sets: 3,
-      reps: 10,
-    });
+    const targetDay = updated[dayIndex];
+    if (!targetDay) return;
+    targetDay.exercises = [
+      ...targetDay.exercises,
+      {
+        exerciseId,
+        sets: 3,
+        reps: '10',
+        restSeconds: 90,
+      },
+    ];
     setBuildDays(updated);
   };
 
   const handleUpdateExerciseInDay = (dayIndex: number, exIndex: number, field: 'sets' | 'reps', value: number) => {
     const updated = [...buildDays];
-    updated[dayIndex].exercises[exIndex][field] = value;
+    const targetDay = updated[dayIndex];
+    if (!targetDay || !targetDay.exercises[exIndex]) return;
+
+    if (field === 'sets') {
+      targetDay.exercises[exIndex] = {
+        ...targetDay.exercises[exIndex],
+        sets: Math.round(clampNumber(value, 1, 20)),
+      };
+    } else {
+      targetDay.exercises[exIndex] = {
+        ...targetDay.exercises[exIndex],
+        reps: String(Math.round(clampNumber(value, 1, 100))),
+      };
+    }
     setBuildDays(updated);
   };
 
   const handleRemoveExerciseFromDay = (dayIndex: number, exIndex: number) => {
     const updated = [...buildDays];
-    updated[dayIndex].exercises.splice(exIndex, 1);
+    const targetDay = updated[dayIndex];
+    if (!targetDay) return;
+    targetDay.exercises.splice(exIndex, 1);
     setBuildDays(updated);
   };
 
   const handleSaveBuilder = () => {
-    if (!buildName.trim() || buildDays.length === 0) return;
-    
+    const cleanName = sanitizeText(buildName, 80);
+    const cleanDesc = sanitizeText(buildDesc, 300);
+    if (!cleanName || buildDays.length === 0) return;
+
+    const cleanDays = buildDays.map((day, idx) => ({
+      ...day,
+      name: sanitizeText(day.name, 60) || `Day ${idx + 1}`,
+    }));
+
     const newProgram: WorkoutProgram = {
       id: `custom-${Date.now()}`,
-      name: buildName,
-      description: buildDesc || 'Custom routine created by you.',
+      name: cleanName,
+      description: cleanDesc || 'Custom routine created in FlexPulse.',
       isCustom: true,
-      days: buildDays,
+      days: cleanDays,
     };
-    
+
     onSaveCustomProgram(newProgram);
-    
-    // Reset builder
+
     setBuildName('');
     setBuildDesc('');
     setBuildDays([]);
     setActiveView('grid');
   };
 
-  // ── VIEWS ──────────────────────────────────────────────────────────────────
+  // VIEWS
   if (activeView === 'detail' && selectedProgram) {
     const isActive = activeRoutineId !== null && String(activeRoutineId) === String(selectedProgram.id);
     return (
       <div className="max-w-4xl mx-auto space-y-6">
-        <button onClick={() => setActiveView('grid')} className="flex items-center gap-2 font-mono text-xs uppercase font-bold text-[#1a1a1a]/60 hover:text-[#ff4d00] transition cursor-pointer">
+        <button
+          type="button"
+          onClick={() => setActiveView('grid')}
+          className="flex items-center gap-2 font-mono text-xs uppercase font-bold text-[#1a1a1a]/60 hover:text-[#ff4d00] transition cursor-pointer"
+        >
           <ArrowLeft className="w-4 h-4" /> Back to Routines
         </button>
-        
+
         <div className="border-2 border-[#1a1a1a] bg-white p-8 shadow-[6px_6px_0_#1a1a1a] flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <div className="flex gap-2 mb-3">
@@ -120,7 +155,7 @@ export const Routines: React.FC<RoutinesProps> = ({
                 </span>
               )}
               {isActive && (
-                <span className="font-mono text-[0.6rem] uppercase font-bold px-2 py-0.5 bg-[#ff4d00] text-white animate-pulse">
+                <span className="font-mono text-[0.6rem] uppercase font-bold px-2 py-0.5 bg-[#ff4d00] text-white">
                   Active Program
                 </span>
               )}
@@ -131,6 +166,7 @@ export const Routines: React.FC<RoutinesProps> = ({
             </p>
           </div>
           <button
+            type="button"
             onClick={() => onActivateRoutine(isActive ? null : selectedProgram.id)}
             className={`action-btn ${isActive ? '' : 'primary'} shrink-0 w-full md:w-auto justify-center`}
           >
@@ -147,7 +183,7 @@ export const Routines: React.FC<RoutinesProps> = ({
                   <h3 className="font-oswald text-xl uppercase font-semibold text-[#1a1a1a]">{day.name}</h3>
                 </div>
               </div>
-              
+
               <div className="p-4 flex-1 space-y-3">
                 {day.exercises.map((dex, j) => {
                   const ex = exercises.find(e => e.id === dex.exerciseId);
@@ -155,18 +191,29 @@ export const Routines: React.FC<RoutinesProps> = ({
                     <div key={j} className="flex justify-between items-start border-b border-[#1a1a1a]/10 pb-2 last:border-0 last:pb-0">
                       <div>
                         <p className="font-mono text-[0.7rem] uppercase font-bold text-[#1a1a1a] leading-tight">
-                          {ex?.name || 'Unknown Exercise'}
+                          {ex?.name || 'Exercise'}
                         </p>
                         <p className="font-mono text-[0.55rem] uppercase text-[#1a1a1a]/50">
-                          {ex?.muscleGroup} • {ex?.equipment}
+                          {ex?.muscleGroup} | {ex?.equipment}
                         </p>
                       </div>
                       <span className="font-mono text-[0.65rem] font-bold text-[#1a1a1a] bg-white border border-[#1a1a1a]/20 px-1.5 py-0.5 whitespace-nowrap">
-                        {dex.sets} × {dex.reps}
+                        {dex.sets} x {dex.reps}
                       </span>
                     </div>
                   );
                 })}
+              </div>
+
+              <div className="p-3 border-t border-[#1a1a1a]/20 bg-white">
+                <button
+                  type="button"
+                  onClick={() => onStartDay(day, selectedProgram.name)}
+                  className="w-full flex items-center justify-center gap-2 bg-[#1a1a1a] text-white py-2 font-oswald uppercase text-xs font-semibold hover:bg-[#ff4d00] transition cursor-pointer"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  Start Day
+                </button>
               </div>
             </div>
           ))}
@@ -179,34 +226,56 @@ export const Routines: React.FC<RoutinesProps> = ({
     return (
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
-          <button onClick={() => setActiveView('grid')} className="flex items-center gap-2 font-mono text-xs uppercase font-bold text-[#1a1a1a]/60 hover:text-[#ff4d00] transition cursor-pointer">
+          <button
+            type="button"
+            onClick={() => setActiveView('grid')}
+            className="flex items-center gap-2 font-mono text-xs uppercase font-bold text-[#1a1a1a]/60 hover:text-[#ff4d00] transition cursor-pointer"
+          >
             <ArrowLeft className="w-4 h-4" /> Cancel Build
           </button>
-          <button onClick={handleSaveBuilder} disabled={!buildName.trim() || buildDays.length === 0}
-            className="action-btn primary disabled:opacity-50 disabled:cursor-not-allowed">
+          <button
+            type="button"
+            onClick={handleSaveBuilder}
+            disabled={!buildName.trim() || buildDays.length === 0}
+            className="action-btn primary disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             Save Custom Routine
           </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* Main Build Area */}
           <div className="lg:col-span-2 space-y-6">
             <div className="border-2 border-[#1a1a1a] bg-white p-6 shadow-[4px_4px_0_#1a1a1a] space-y-4">
               <div>
                 <label className="font-mono text-xs uppercase font-bold text-[#1a1a1a]/60 block mb-1">Routine Name</label>
-                <input type="text" value={buildName} onChange={e => setBuildName(e.target.value)} placeholder="e.g. Bro Split V2"
-                  className="w-full border-2 border-[#1a1a1a] p-3 font-oswald text-xl uppercase font-semibold bg-[#f8f7f4]" />
+                <input
+                  type="text"
+                  maxLength={80}
+                  value={buildName}
+                  onChange={e => setBuildName(sanitizeInput(e.target.value, 80))}
+                  placeholder="e.g. Upper Lower Strength"
+                  className="w-full border-2 border-[#1a1a1a] p-3 font-oswald text-xl uppercase font-semibold bg-[#f8f7f4]"
+                />
               </div>
               <div>
                 <label className="font-mono text-xs uppercase font-bold text-[#1a1a1a]/60 block mb-1">Description (Optional)</label>
-                <textarea value={buildDesc} onChange={e => setBuildDesc(e.target.value)} placeholder="Focusing on hypertrophy..."
-                  className="w-full border-2 border-[#1a1a1a] p-3 font-mono text-sm bg-[#f8f7f4] h-20 resize-none" />
+                <textarea
+                  maxLength={300}
+                  value={buildDesc}
+                  onChange={e => setBuildDesc(sanitizeInput(e.target.value, 300))}
+                  placeholder="Focusing on progressive overload..."
+                  className="w-full border-2 border-[#1a1a1a] p-3 font-mono text-sm bg-[#f8f7f4] h-20 resize-none"
+                />
               </div>
             </div>
 
             <div className="flex justify-between items-center">
               <h3 className="font-oswald text-2xl uppercase font-semibold text-[#1a1a1a]">Training Days</h3>
-              <button onClick={handleAddDay} className="flex items-center gap-1 font-mono text-xs uppercase font-bold text-[#1a1a1a] hover:text-[#ff4d00] transition cursor-pointer">
+              <button
+                type="button"
+                onClick={handleAddDay}
+                className="flex items-center gap-1 font-mono text-xs uppercase font-bold text-[#1a1a1a] hover:text-[#ff4d00] transition cursor-pointer"
+              >
                 <Plus className="w-4 h-4" /> Add Day
               </button>
             </div>
@@ -218,19 +287,38 @@ export const Routines: React.FC<RoutinesProps> = ({
             ) : (
               <div className="space-y-4">
                 {buildDays.map((day, i) => (
-                  <div key={day.id} className={`border-2 border-[#1a1a1a] transition-all ${activeDayIndex === i ? 'bg-white shadow-[4px_4px_0_#ff4d00] border-[#ff4d00]' : 'bg-[#f8f7f4] shadow-[4px_4px_0_#1a1a1a]'}`}>
-                    <div className="p-4 border-b-2 border-[#1a1a1a] flex justify-between items-center bg-white cursor-pointer" onClick={() => setActiveDayIndex(i)}>
+                  <div
+                    key={day.id}
+                    className={`border-2 border-[#1a1a1a] transition-all ${
+                      activeDayIndex === i ? 'bg-white shadow-[4px_4px_0_#ff4d00] border-[#ff4d00]' : 'bg-[#f8f7f4] shadow-[4px_4px_0_#1a1a1a]'
+                    }`}
+                  >
+                    <div
+                      className="p-4 border-b-2 border-[#1a1a1a] flex justify-between items-center bg-white cursor-pointer"
+                      onClick={() => setActiveDayIndex(i)}
+                    >
                       <div className="flex items-center gap-3 w-full">
                         <GripVertical className="w-5 h-5 text-[#1a1a1a]/30" />
-                        <span className="font-mono text-xs uppercase font-bold text-[#ff4d00] w-12">Day {i+1}</span>
-                        <input type="text" value={day.name} onChange={e => handleUpdateDayName(i, e.target.value)} placeholder="e.g. Pull Day"
-                          className="flex-1 font-oswald text-lg uppercase font-semibold bg-transparent focus:outline-none border-b border-transparent focus:border-[#1a1a1a]/20" onClick={e => e.stopPropagation()} />
+                        <span className="font-mono text-xs uppercase font-bold text-[#ff4d00] w-12">Day {i + 1}</span>
+                        <input
+                          type="text"
+                          maxLength={60}
+                          value={day.name}
+                          onChange={e => handleUpdateDayName(i, e.target.value)}
+                          placeholder="e.g. Pull Day"
+                          className="flex-1 font-oswald text-lg uppercase font-semibold bg-transparent focus:outline-none border-b border-transparent focus:border-[#1a1a1a]/20"
+                          onClick={e => e.stopPropagation()}
+                        />
                       </div>
-                      <button onClick={e => { e.stopPropagation(); handleRemoveDay(i); }} className="text-[#1a1a1a]/40 hover:text-red-500 transition cursor-pointer ml-4 p-1">
+                      <button
+                        type="button"
+                        onClick={e => { e.stopPropagation(); handleRemoveDay(i); }}
+                        className="text-[#1a1a1a]/40 hover:text-red-500 transition cursor-pointer ml-4 p-1"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
-                    
+
                     {activeDayIndex === i && (
                       <div className="p-4 space-y-2">
                         {day.exercises.length === 0 ? (
@@ -253,11 +341,27 @@ export const Routines: React.FC<RoutinesProps> = ({
                                     <p className="font-mono text-xs uppercase font-bold text-[#1a1a1a] truncate">{ex?.name}</p>
                                     <p className="font-mono text-[0.55rem] text-[#1a1a1a]/50 uppercase truncate">{ex?.muscleGroup}</p>
                                   </div>
-                                  <input type="number" min={1} value={dex.sets} onChange={e => handleUpdateExerciseInDay(i, j, 'sets', parseInt(e.target.value)||1)}
-                                    className="w-full border border-[#1a1a1a] p-1 font-mono text-sm text-center" />
-                                  <input type="number" min={1} value={dex.reps} onChange={e => handleUpdateExerciseInDay(i, j, 'reps', parseInt(e.target.value)||1)}
-                                    className="w-full border border-[#1a1a1a] p-1 font-mono text-sm text-center" />
-                                  <button onClick={() => handleRemoveExerciseFromDay(i, j)} className="w-full flex justify-center text-[#1a1a1a]/40 hover:text-red-500 cursor-pointer">
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    max={20}
+                                    value={dex.sets}
+                                    onChange={e => handleUpdateExerciseInDay(i, j, 'sets', parseInt(e.target.value, 10) || 1)}
+                                    className="w-full border border-[#1a1a1a] p-1 font-mono text-sm text-center"
+                                  />
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    max={100}
+                                    value={parseInt(String(dex.reps), 10) || 10}
+                                    onChange={e => handleUpdateExerciseInDay(i, j, 'reps', parseInt(e.target.value, 10) || 1)}
+                                    className="w-full border border-[#1a1a1a] p-1 font-mono text-sm text-center"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveExerciseFromDay(i, j)}
+                                    className="w-full flex justify-center text-[#1a1a1a]/40 hover:text-red-500 cursor-pointer"
+                                  >
                                     <Trash2 className="w-4 h-4" />
                                   </button>
                                 </div>
@@ -273,16 +377,14 @@ export const Routines: React.FC<RoutinesProps> = ({
             )}
           </div>
 
-          {/* Exercise Selection Sidebar */}
           <div className="border-2 border-[#1a1a1a] bg-white shadow-[4px_4px_0_#1a1a1a] sticky top-6 max-h-[calc(100vh-120px)] flex flex-col">
             <div className="p-4 border-b-2 border-[#1a1a1a] bg-[#1a1a1a] text-white">
               <h3 className="font-oswald text-lg uppercase font-semibold">Exercise Library</h3>
               <p className="font-mono text-[0.65rem] opacity-70">Add to active day (Day {activeDayIndex + 1})</p>
             </div>
-            
+
             <div className="p-3 border-b border-[#1a1a1a]/10 bg-[#f8f7f4]">
-               {/* Quick filter could go here */}
-               <p className="font-mono text-[0.6rem] uppercase text-[#1a1a1a]/60 text-center">Click exercise to add to day</p>
+              <p className="font-mono text-[0.6rem] uppercase text-[#1a1a1a]/60 text-center">Click exercise to add to day</p>
             </div>
 
             <div className="flex-1 overflow-y-auto p-2 space-y-1">
@@ -292,8 +394,12 @@ export const Routines: React.FC<RoutinesProps> = ({
                 </div>
               ) : (
                 exercises.map(ex => (
-                  <button key={ex.id} onClick={() => handleAddExerciseToDay(activeDayIndex, ex.id)}
-                    className="w-full text-left p-2 hover:bg-[#1a1a1a] hover:text-white transition cursor-pointer border border-transparent hover:border-[#1a1a1a] flex justify-between items-center group">
+                  <button
+                    type="button"
+                    key={ex.id}
+                    onClick={() => handleAddExerciseToDay(activeDayIndex, ex.id)}
+                    className="w-full text-left p-2 hover:bg-[#1a1a1a] hover:text-white transition cursor-pointer border border-transparent hover:border-[#1a1a1a] flex justify-between items-center group"
+                  >
                     <div>
                       <p className="font-oswald text-sm uppercase leading-tight">{ex.name}</p>
                       <p className="font-mono text-[0.55rem] uppercase opacity-50 group-hover:opacity-70">{ex.muscleGroup}</p>
@@ -309,7 +415,6 @@ export const Routines: React.FC<RoutinesProps> = ({
     );
   }
 
-  // default grid view
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
       <div className="border-2 border-[#1a1a1a] bg-white p-6 shadow-[4px_4px_0_#1a1a1a] flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -322,7 +427,7 @@ export const Routines: React.FC<RoutinesProps> = ({
             Select a structured program based on your goals, or build your own custom routine.
           </p>
         </div>
-        <button onClick={() => setActiveView('builder')} className="action-btn">
+        <button type="button" onClick={() => setActiveView('builder')} className="action-btn">
           <Settings className="w-4 h-4" />
           <span>Routine Builder</span>
         </button>
@@ -330,15 +435,17 @@ export const Routines: React.FC<RoutinesProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {programs.map(p => (
-          <div key={p.id} onClick={() => handleProgramClick(p)}
-            className="group border-2 border-[#1a1a1a] bg-white hover:shadow-[8px_8px_0_#1a1a1a] hover:-translate-y-1 transition-all cursor-pointer flex flex-col h-full relative overflow-hidden">
-            
+          <div
+            key={p.id}
+            onClick={() => handleProgramClick(p)}
+            className="group border-2 border-[#1a1a1a] bg-white hover:shadow-[8px_8px_0_#1a1a1a] hover:-translate-y-1 transition-all cursor-pointer flex flex-col h-full relative overflow-hidden"
+          >
             {p.isCustom && (
               <div className="absolute top-3 right-[-30px] bg-[#ff4d00] text-white font-mono text-[0.55rem] uppercase font-bold py-1 w-[100px] text-center rotate-45 shadow-sm">
                 CUSTOM
               </div>
             )}
-            
+
             <div className="p-6 border-b-2 border-[#1a1a1a] bg-[#f8f7f4]">
               <span className="font-mono text-[0.6rem] uppercase font-bold px-2 py-0.5 border border-[#1a1a1a] bg-white text-[#1a1a1a]">
                 {p.days.length} Days / Week
