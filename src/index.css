@@ -148,59 +148,60 @@ body {
   background-size: 32px 32px;
 }
 
-/* ── Exercise animations ───────────────────────────────────────────────── */
+/* Exercise animations */
 @keyframes ex-push {
   0%, 100% { transform: translateX(0); }
-  50%       { transform: translateX(-22px); }
+  50%       { transform: translateX(-14px); }
 }
 @keyframes ex-pull {
   0%, 100% { transform: translateX(0); }
-  50%       { transform: translateX(22px); }
+  50%       { transform: translateX(14px); }
 }
 @keyframes ex-squat {
   0%, 100% { transform: scaleY(1) translateY(0); }
-  50%       { transform: scaleY(0.72) translateY(10px); }
+  50%       { transform: scaleY(0.84) translateY(6px); }
 }
 @keyframes ex-press {
   0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-22px); }
+  50%       { transform: translateY(-14px); }
 }
 @keyframes ex-curl {
   0%, 100% { transform: rotate(0deg); }
-  50%       { transform: rotate(70deg); }
+  50%       { transform: rotate(35deg); }
 }
 @keyframes ex-crunch {
   0%, 100% { transform: scaleY(1); }
-  50%       { transform: scaleY(0.75); }
-}
-@keyframes ex-deadlift {
-  0%, 100% { transform: translateY(0) scaleY(1); }
-  50%       { transform: translateY(-18px) scaleY(1.05); }
+  50%       { transform: scaleY(0.86); }
 }
 
-/* ── Workout complete toast ────────────────────────────────────────────── */
+/* Subtle UI transitions */
 @keyframes slide-in-right {
-  from { transform: translateX(110%); opacity: 0; }
+  from { transform: translateX(24px); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }
 }
 @keyframes fade-in-up {
-  from { transform: translateY(24px); opacity: 0; }
+  from { transform: translateY(10px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
-}
-@keyframes confetti-fall {
-  0%   { transform: translateY(-10px) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(60px) rotate(360deg); opacity: 0; }
 }
 @keyframes pulse-glow {
   0%, 100% { box-shadow: 0 0 0 0 rgba(255, 77, 0, 0); }
-  50%       { box-shadow: 0 0 0 8px rgba(255, 77, 0, 0.15); }
+  50%       { box-shadow: 0 0 0 6px rgba(255, 77, 0, 0.14); }
 }
 
-.slide-in-right { animation: slide-in-right 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
-.fade-in-up     { animation: fade-in-up 0.5s ease forwards; }
+.slide-in-right { animation: slide-in-right 0.2s ease-out forwards; }
+.fade-in-up     { animation: fade-in-up 0.25s ease-out forwards; }
 .pulse-glow     { animation: pulse-glow 2s ease infinite; }
 
-/* ── Dark Mode Class Overrides ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Dark Mode Class Overrides */
 .dark {
   .bg-\[\#f8f7f4\], .bg-\[\#F8F7F4\], .bg-\[\#f8f7f4\]\/60 {
     background-color: var(--bg) !important;
@@ -243,7 +244,7 @@ body {
   }
   
   /* Inputs inside dark mode */
-  input, textarea {
+  input, textarea, select {
     background-color: var(--bg) !important;
     color: var(--ink) !important;
     border-color: var(--ink) !important;

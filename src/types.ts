@@ -1,6 +1,6 @@
 export type MuscleGroup = 'Chest' | 'Back' | 'Legs' | 'Shoulders' | 'Arms' | 'Core';
 export type EquipmentType = 'Barbell' | 'Dumbbell' | 'Cable' | 'Machine' | 'Bodyweight';
-export type ProgramSplit = 'PPL' | 'Arnold Split' | 'Bro Split' | 'Stronglifts 5×5' | 'Upper/Lower' | 'Full Body' | 'Custom';
+export type ProgramSplit = 'PPL' | 'Arnold Split' | 'Bro Split' | 'Stronglifts 5x5' | 'Upper/Lower' | 'Full Body' | 'Custom';
 export type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced';
 export type FitnessGoal = 'Hypertrophy' | 'Strength' | 'Power' | 'General Fitness';
 
@@ -47,7 +47,18 @@ export interface WorkoutSession {
   notes?: string;
 }
 
-// ── Legacy single-day template (kept for compatibility) ──────────────────────
+export interface CompletedWorkout {
+  id: string;
+  title: string;
+  startedAt: string;
+  completedAt?: string;
+  durationSeconds: number;
+  totalVolumeLbs: number;
+  status: string;
+  setsCount: number;
+}
+
+// Legacy single-day template (kept for compatibility)
 export interface RoutineTemplate {
   id: string;
   name: string;
@@ -60,19 +71,19 @@ export interface RoutineTemplate {
   }[];
 }
 
-// ── New full-program system ──────────────────────────────────────────────────
+// Full-program system
 export interface ProgramExercise {
   exerciseId: string;
   sets: number;
-  reps: string;        // e.g. "5" | "8-10" | "12-15"
+  reps: string;
   restSeconds: number;
   notes?: string;
 }
 
 export interface WorkoutDay {
   id: string;
-  label?: string;       // "Day 1", "Push A"
-  name: string;        // "Push Day — Chest & Shoulders"
+  label?: string;
+  name: string; // e.g. "Push Day - Chest & Shoulders"
   musclesFocus?: MuscleGroup[];
   exercises: ProgramExercise[];
 }
@@ -83,7 +94,7 @@ export interface WorkoutProgram {
   shortName?: string;
   split?: ProgramSplit;
   description: string;
-  frequency?: string;   // "6 days/week"
+  frequency?: string;
   difficulty?: DifficultyLevel;
   goal?: FitnessGoal;
   isCustom?: boolean;
@@ -100,10 +111,10 @@ export interface PersonalRecord {
   achievedAt: string;
 }
 
-export type ViewTab = 'dashboard' | 'live_workout' | 'exercises' | 'routines' | 'profile';
+export type ViewTab = 'dashboard' | 'live_workout' | 'exercises' | 'routines' | 'profile' | 'terms' | 'privacy';
 export type WeightUnit = 'lbs' | 'kg';
 
-// ── Weight conversion helpers ────────────────────────────────────────────────
+// Weight conversion helpers
 export const toDisplayWeight = (lbs: number, unit: WeightUnit): number =>
   unit === 'kg' ? Math.round((lbs / 2.205) * 4) / 4 : lbs;
 

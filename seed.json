@@ -407,7 +407,7 @@
         {
           "id": "ppl-1",
           "label": "Day 1",
-          "name": "Push A — Chest, Shoulders & Triceps",
+          "name": "Push A - Chest, Shoulders & Triceps",
           "musclesFocus": [
             "Chest",
             "Shoulders",
@@ -456,7 +456,7 @@
         {
           "id": "ppl-2",
           "label": "Day 2",
-          "name": "Pull A — Back & Biceps",
+          "name": "Pull A - Back & Biceps",
           "musclesFocus": [
             "Back",
             "Arms"
@@ -504,7 +504,7 @@
         {
           "id": "ppl-3",
           "label": "Day 3",
-          "name": "Legs A — Quads Focus",
+          "name": "Legs A - Quads Focus",
           "musclesFocus": [
             "Legs"
           ],
@@ -514,7 +514,7 @@
               "sets": 4,
               "reps": "6",
               "restSeconds": 180,
-              "notes": "Squat opener — heaviest set"
+              "notes": "Squat opener - heaviest set"
             },
             {
               "exerciseId": "ex-5",
@@ -551,7 +551,7 @@
         {
           "id": "ppl-4",
           "label": "Day 4",
-          "name": "Push B — Shoulders & Chest Volume",
+          "name": "Push B - Shoulders & Chest Volume",
           "musclesFocus": [
             "Shoulders",
             "Chest",
@@ -599,7 +599,7 @@
         {
           "id": "ppl-5",
           "label": "Day 5",
-          "name": "Pull B — Width & Rear Delts",
+          "name": "Pull B - Width & Rear Delts",
           "musclesFocus": [
             "Back",
             "Shoulders",
@@ -648,7 +648,7 @@
         {
           "id": "ppl-6",
           "label": "Day 6",
-          "name": "Legs B — Posterior Chain Focus",
+          "name": "Legs B - Posterior Chain Focus",
           "musclesFocus": [
             "Legs"
           ],
@@ -1241,7 +1241,7 @@
         {
           "id": "sl-1",
           "label": "Workout A",
-          "name": "Workout A — Squat, Bench, Row",
+          "name": "Workout A - Squat, Bench, Row",
           "musclesFocus": [
             "Legs",
             "Chest",
@@ -1274,7 +1274,7 @@
         {
           "id": "sl-2",
           "label": "Workout B",
-          "name": "Workout B — Squat, OHP, Deadlift",
+          "name": "Workout B - Squat, OHP, Deadlift",
           "musclesFocus": [
             "Legs",
             "Shoulders",
@@ -1319,7 +1319,7 @@
         {
           "id": "ul-1",
           "label": "Upper A",
-          "name": "Upper — Strength Focus",
+          "name": "Upper - Strength Focus",
           "musclesFocus": [
             "Chest",
             "Back",
@@ -1368,7 +1368,7 @@
         {
           "id": "ul-2",
           "label": "Lower A",
-          "name": "Lower — Strength Focus",
+          "name": "Lower - Strength Focus",
           "musclesFocus": [
             "Legs"
           ],
@@ -1408,7 +1408,7 @@
         {
           "id": "ul-3",
           "label": "Upper B",
-          "name": "Upper — Hypertrophy Focus",
+          "name": "Upper - Hypertrophy Focus",
           "musclesFocus": [
             "Chest",
             "Back",
@@ -1457,7 +1457,7 @@
         {
           "id": "ul-4",
           "label": "Lower B",
-          "name": "Lower — Hypertrophy Focus",
+          "name": "Lower - Hypertrophy Focus",
           "musclesFocus": [
             "Legs"
           ],
@@ -1515,7 +1515,7 @@
         {
           "id": "fb-1",
           "label": "Day A",
-          "name": "Full Body A — Squat Focus",
+          "name": "Full Body A - Squat Focus",
           "musclesFocus": [
             "Legs",
             "Chest",
@@ -1558,7 +1558,7 @@
         {
           "id": "fb-2",
           "label": "Day B",
-          "name": "Full Body B — Deadlift Focus",
+          "name": "Full Body B - Deadlift Focus",
           "musclesFocus": [
             "Back",
             "Legs",
@@ -1601,7 +1601,7 @@
         {
           "id": "fb-3",
           "label": "Day C",
-          "name": "Full Body C — Volume Focus",
+          "name": "Full Body C - Volume Focus",
           "musclesFocus": [
             "Legs",
             "Chest",

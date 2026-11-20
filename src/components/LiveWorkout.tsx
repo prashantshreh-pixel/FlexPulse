@@ -1,6 +1,28 @@
 import React, { useState } from 'react';
-import { Exercise, WorkoutSession, MuscleGroup, WeightUnit, toDisplayWeight, toStorageLbs, WorkoutProgram, WorkoutDay } from '../types';
-import { Plus, Check, CalendarDays, Dumbbell, ChevronRight, Info, X, Play } from 'lucide-react';
+import {
+  Exercise,
+  WorkoutSession,
+  MuscleGroup,
+  WeightUnit,
+  toDisplayWeight,
+  WorkoutProgram,
+  WorkoutDay,
+} from '../types';
+import {
+  Plus,
+  Check,
+  CalendarDays,
+  Dumbbell,
+  ChevronRight,
+  X,
+  Play,
+  Trophy,
+  Moon,
+  Droplets,
+  Utensils,
+  Activity,
+} from 'lucide-react';
+import { clampNumber, sanitizeInput } from '../utils/security';
 
 interface LiveWorkoutProps {
   session: WorkoutSession;
@@ -32,29 +54,29 @@ const REST_IMAGES = [
   'https://images.unsplash.com/photo-1516407718571-40c19babb26e?w=700&h=400&fit=crop',
 ];
 const REST_QUOTES = [
-  'Recovery is not the absence of training — it IS training.',
+  'Recovery is not the absence of training - it IS training.',
   'Your muscles grow during rest, not during the workout.',
-  'Champions are built in the recovery room, not just the weight room.',
-  'Rest days are part of the plan, not a break from it.',
+  'Strength is built in recovery just as much as under the bar.',
+  'Rest days are part of the program, not a break from it.',
 ];
 const pickedImage = REST_IMAGES[Math.floor(Math.random() * REST_IMAGES.length)];
 const pickedQuote = REST_QUOTES[Math.floor(Math.random() * REST_QUOTES.length)];
 
-// ── RPE Info Tooltip ─────────────────────────────────────────────────────────
+// RPE Info Tooltip
 const RPE_TOOLTIP: React.FC<{ onClose: () => void }> = ({ onClose }) => (
-  <div className="absolute top-full left-0 mt-1 z-30 w-52 bg-[#1a1a1a] text-[#f8f7f4] p-3 shadow-[4px_4px_0_#ff4d00] border border-[#ff4d00]">
+  <div className="absolute top-full left-0 mt-1 z-30 w-56 bg-[#1a1a1a] text-[#f8f7f4] p-3 shadow-[4px_4px_0_#ff4d00] border border-[#ff4d00]">
     <div className="flex justify-between items-center mb-2">
       <span className="font-mono text-[0.6rem] font-black uppercase text-[#ff4d00]">RPE Scale</span>
-      <button onClick={onClose} className="cursor-pointer text-[#f8f7f4]/60 hover:text-[#f8f7f4]">
+      <button type="button" onClick={onClose} className="cursor-pointer text-[#f8f7f4]/60 hover:text-[#f8f7f4]">
         <X className="w-3 h-3" />
       </button>
     </div>
     {[
-      { val: 10, label: 'Max effort — no reps left', star: false },
-      { val: 9,  label: '1 rep left in the tank',   star: false },
-      { val: 8,  label: '2 reps left ★ Sweet spot', star: true  },
-      { val: 7,  label: '3 reps left',              star: false },
-      { val: 6,  label: '4+ reps — warm-up range',  star: false },
+      { val: 10, label: 'Max effort - no reps left', star: false },
+      { val: 9,  label: '1 rep left in the tank',    star: false },
+      { val: 8,  label: '2 reps left (Sweet spot)',  star: true  },
+      { val: 7,  label: '3 reps left',               star: false },
+      { val: 6,  label: '4+ reps - warm-up range',   star: false },
     ].map(r => (
       <div key={r.val} className={`flex gap-2 py-1 border-b border-white/10 last:border-0 ${r.star ? 'text-[#ff4d00] font-bold' : ''}`}>
         <span className="font-mono text-xs w-4 shrink-0">{r.val}</span>
@@ -82,18 +104,25 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
   const muscleOptions: (MuscleGroup | 'All')[] = ['All', 'Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core'];
 
   const filteredExercises = exercises.filter(ex => {
-    const q = searchQuery.toLowerCase();
+    const q = searchQuery.trim().toLowerCase();
     const matchSearch = ex.name.toLowerCase().includes(q) || ex.muscleGroup.toLowerCase().includes(q);
     const matchMuscle = selectedMuscle === 'All' || ex.muscleGroup === selectedMuscle;
     return matchSearch && matchMuscle;
   });
 
   const handleInputChange = (exerciseId: string, field: 'weight' | 'reps' | 'rpe', value: number) => {
+    const clamped =
+      field === 'weight'
+        ? clampNumber(value, 0, 2500)
+        : field === 'reps'
+          ? Math.round(clampNumber(value, 1, 500))
+          : clampNumber(value, 1, 10);
+
     setInputStates(prev => ({
       ...prev,
       [exerciseId]: {
         ...(prev[exerciseId] || { weight: weightUnit === 'kg' ? 60 : 135, reps: 10, rpe: 8 }),
-        [field]: value,
+        [field]: clamped,
       },
     }));
   };
@@ -101,7 +130,10 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
   const handleLogSet = (e: React.FormEvent, exerciseId: string) => {
     e.preventDefault();
     const state = inputStates[exerciseId] || { weight: weightUnit === 'kg' ? 60 : 135, reps: 10, rpe: 8 };
-    onLogSet(exerciseId, state.weight, state.reps, state.rpe);
+    const safeWeight = clampNumber(state.weight, 0, 2500);
+    const safeReps = Math.round(clampNumber(state.reps, 1, 500));
+    const safeRpe = clampNumber(state.rpe, 1, 10);
+    onLogSet(exerciseId, safeWeight, safeReps, safeRpe);
   };
 
   const formatDuration = (secs: number) => {
@@ -114,20 +146,29 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
 
   const displayWeight = (lbs: number) => toDisplayWeight(lbs, weightUnit);
 
-  // ── WORKOUT COMPLETE STATE ─────────────────────────────────────────────────
+  // WORKOUT COMPLETE STATE
   if (workoutComplete) {
+    const recoveryItems = [
+      { icon: Droplets, text: 'Drink at least 3L of water to rehydrate' },
+      { icon: Utensils, text: 'Eat 1.6-2.2g of protein per kg of bodyweight' },
+      { icon: Moon, text: 'Aim for 8+ hours of sleep for muscle synthesis' },
+      { icon: Activity, text: 'Light stretching or walking - stay mobile' },
+    ];
+
     return (
       <div className="max-w-3xl mx-auto space-y-6 fade-in-up">
-        {/* Toast */}
         {showCompleteToast && (
           <div className="slide-in-right fixed bottom-6 right-6 z-50 w-80 bg-[#1a1a1a] text-[#f8f7f4] border-2 border-[#ff4d00] p-5 shadow-[4px_4px_0_#ff4d00]">
             <div className="flex justify-between items-start mb-2">
-              <span className="font-mono text-[0.55rem] font-black uppercase text-[#ff4d00]">Workout Complete!</span>
-              <button onClick={() => setShowCompleteToast(false)} className="cursor-pointer text-[#f8f7f4]/60 hover:text-[#f8f7f4]">
+              <span className="font-mono text-[0.55rem] font-black uppercase text-[#ff4d00]">Workout Complete</span>
+              <button type="button" onClick={() => setShowCompleteToast(false)} className="cursor-pointer text-[#f8f7f4]/60 hover:text-[#f8f7f4]">
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <p className="font-oswald text-2xl uppercase font-semibold">Congratulations! 🎉</p>
+            <p className="font-oswald text-2xl uppercase font-semibold flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-[#ff4d00]" />
+              Session Saved
+            </p>
             <p className="font-mono text-[0.65rem] text-[#f8f7f4]/70 mt-2 leading-relaxed">
               You logged{' '}
               <strong className="text-[#ff4d00]">{session.exerciseGroups.reduce((a, g) => a + g.sets.length, 0)} sets</strong>{' '}
@@ -137,7 +178,6 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
           </div>
         )}
 
-        {/* Rest day card */}
         <div className="border-2 border-[#1a1a1a] bg-white shadow-[4px_4px_0_#1a1a1a] overflow-hidden">
           <img
             src={pickedImage}
@@ -147,14 +187,14 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
           />
           <div className="p-8 space-y-4">
             <p className="font-mono text-xs uppercase font-bold text-[#ff4d00] tracking-widest">Workout Complete</p>
-            <h2 className="font-oswald text-4xl uppercase font-semibold text-[#1a1a1a]">
-              Time to Recover 🛌
+            <h2 className="font-oswald text-4xl uppercase font-semibold text-[#1a1a1a] flex items-center gap-3">
+              <Moon className="w-7 h-7 text-[#ff4d00]" />
+              Time to Recover
             </h2>
             <p className="font-mono text-sm text-[#1a1a1a]/60 italic leading-relaxed max-w-lg">
-              "{pickedQuote}"
+              &quot;{pickedQuote}&quot;
             </p>
 
-            {/* Stats summary */}
             <div className="grid grid-cols-3 gap-4 pt-4 border-t-2 border-[#1a1a1a]">
               {[
                 ['Duration', formatDuration(session.durationSeconds)],
@@ -168,20 +208,21 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
               ))}
             </div>
 
-            {/* Rest day tips */}
             <div className="space-y-2 pt-2">
-              <h3 className="font-mono text-xs uppercase font-bold text-[#1a1a1a]/60">Tomorrow's Recovery Checklist</h3>
-              {[
-                '💧 Drink at least 3L of water to rehydrate',
-                '🥩 Eat 1.6–2.2g of protein per kg of bodyweight',
-                '😴 Aim for 8+ hours of sleep for muscle synthesis',
-                '🧘 Light stretching or walking — stay mobile',
-              ].map(tip => (
-                <p key={tip} className="font-mono text-[0.65rem] text-[#1a1a1a]/70 leading-relaxed">{tip}</p>
-              ))}
+              <h3 className="font-mono text-xs uppercase font-bold text-[#1a1a1a]/60">Tomorrow&apos;s Recovery Checklist</h3>
+              {recoveryItems.map(item => {
+                const Icon = item.icon;
+                return (
+                  <p key={item.text} className="font-mono text-[0.65rem] text-[#1a1a1a]/70 leading-relaxed flex items-center gap-2">
+                    <Icon className="w-3.5 h-3.5 text-[#ff4d00] shrink-0" />
+                    <span>{item.text}</span>
+                  </p>
+                );
+              })}
             </div>
 
             <button
+              type="button"
               onClick={onResetWorkout}
               className="mt-2 flex items-center gap-2 bg-[#1a1a1a] text-[#f8f7f4] border-2 border-[#1a1a1a] px-6 py-3 font-oswald uppercase text-sm font-semibold hover:bg-[#ff4d00] hover:border-[#ff4d00] transition cursor-pointer"
             >
@@ -193,7 +234,7 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
     );
   }
 
-  // ── EMPTY STATE ────────────────────────────────────────────────────────────
+  // EMPTY STATE
   if (session.exerciseGroups.length === 0) {
     if (activeProgram && activeDay) {
       return (
@@ -218,7 +259,6 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
               </span>
             </div>
 
-            {/* List of exercises in this day */}
             <div className="space-y-3">
               {activeDay.exercises.map((dex, index) => {
                 const ex = exercises.find(e => e.id === dex.exerciseId);
@@ -226,7 +266,7 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
                   <div key={index} className="flex justify-between items-center p-3 bg-[#f8f7f4] border border-[#1a1a1a]/10">
                     <div>
                       <span className="font-mono text-[0.7rem] uppercase font-bold text-[#1a1a1a]">{ex?.name || 'Exercise'}</span>
-                      <span className="font-mono text-[0.55rem] text-[#1a1a1a]/50 uppercase block">{ex?.muscleGroup} • {ex?.equipment}</span>
+                      <span className="font-mono text-[0.55rem] text-[#1a1a1a]/50 uppercase block">{ex?.muscleGroup} | {ex?.equipment}</span>
                     </div>
                     <span className="font-mono text-xs font-bold text-[#1a1a1a]/80 bg-white border border-[#1a1a1a]/20 px-2 py-0.5 shadow-sm">
                       {dex.sets}x{dex.reps}
@@ -238,6 +278,7 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <button
+                type="button"
                 onClick={() => onStartDay(activeDay, activeProgram.name)}
                 className="flex-1 flex items-center justify-center gap-2 bg-[#ff4d00] text-white border-2 border-[#ff4d00] px-6 py-3 font-oswald uppercase text-sm font-semibold hover:bg-[#e03d00] transition cursor-pointer shadow-[4px_4px_0_#1a1a1a] active:translate-y-0.5 active:shadow-[0_0_0_#1a1a1a]"
               >
@@ -245,6 +286,7 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
                 Start Workout Now
               </button>
               <button
+                type="button"
                 onClick={onGoToRoutines}
                 className="flex items-center justify-center gap-2 bg-white text-[#1a1a1a] border-2 border-[#1a1a1a] px-6 py-3 font-oswald uppercase text-sm font-semibold hover:bg-[#1a1a1a]/5 transition cursor-pointer shadow-[4px_4px_0_#1a1a1a] active:translate-y-0.5 active:shadow-[0_0_0_#1a1a1a]"
               >
@@ -279,6 +321,7 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
           </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
+              type="button"
               onClick={onGoToRoutines}
               className="flex items-center justify-center gap-2 bg-[#1a1a1a] text-[#f8f7f4] border-2 border-[#1a1a1a] px-6 py-3 font-oswald uppercase text-sm font-semibold hover:bg-[#ff4d00] hover:border-[#ff4d00] transition cursor-pointer"
             >
@@ -286,6 +329,7 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
               Browse Routines
             </button>
             <button
+              type="button"
               onClick={() => setIsAddDrawerOpen(true)}
               className="flex items-center justify-center gap-2 bg-white text-[#1a1a1a] border-2 border-[#1a1a1a] px-6 py-3 font-oswald uppercase text-sm font-semibold hover:bg-[#1a1a1a]/5 transition cursor-pointer"
             >
@@ -300,27 +344,37 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
             <div className="flex gap-2 flex-wrap">
               <input
                 type="text"
+                maxLength={80}
                 value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(sanitizeInput(e.target.value, 80))}
                 placeholder="Search exercises..."
                 className="border-2 border-[#1a1a1a] p-2 font-mono text-sm flex-1 min-w-[160px] bg-white"
               />
               <div className="flex gap-1 flex-wrap">
                 {muscleOptions.map(m => (
-                  <button key={m} onClick={() => setSelectedMuscle(m)}
+                  <button
+                    type="button"
+                    key={m}
+                    onClick={() => setSelectedMuscle(m)}
                     className={`font-mono text-[0.6rem] px-2 py-1 uppercase font-bold transition cursor-pointer border ${
                       selectedMuscle === m ? 'border-[#1a1a1a] bg-[#1a1a1a] text-white' : 'border-[#1a1a1a]/30 text-[#1a1a1a] hover:border-[#1a1a1a]'
-                    }`}>{m}</button>
+                    }`}
+                  >
+                    {m}
+                  </button>
                 ))}
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto">
               {filteredExercises.map(ex => (
-                <div key={ex.id} onClick={() => { onAddExerciseToSession(ex); setIsAddDrawerOpen(false); }}
-                  className="p-3 bg-[#f8f7f4] border border-[#1a1a1a] hover:bg-[#ff4d00] hover:text-white cursor-pointer transition flex items-center justify-between group">
+                <div
+                  key={ex.id}
+                  onClick={() => { onAddExerciseToSession(ex); setIsAddDrawerOpen(false); }}
+                  className="p-3 bg-[#f8f7f4] border border-[#1a1a1a] hover:bg-[#ff4d00] hover:text-white cursor-pointer transition flex items-center justify-between group"
+                >
                   <div>
                     <h4 className="font-oswald uppercase text-sm font-semibold">{ex.name}</h4>
-                    <span className="font-mono text-[0.6rem] opacity-70">{ex.muscleGroup} • {ex.equipment}</span>
+                    <span className="font-mono text-[0.6rem] opacity-70">{ex.muscleGroup} | {ex.equipment}</span>
                   </div>
                   <Plus className="w-4 h-4 opacity-60 group-hover:opacity-100" />
                 </div>
@@ -332,10 +386,9 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
     );
   }
 
-  // ── ACTIVE WORKOUT ─────────────────────────────────────────────────────────
+  // ACTIVE WORKOUT
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
-      {/* Session header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b-2 border-[#1a1a1a]">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -349,18 +402,18 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
           </h2>
           <div className="font-mono text-xs text-[#1a1a1a]/60 mt-3 flex items-center gap-4 font-semibold">
             <span>{formatDuration(session.durationSeconds)} elapsed</span>
-            <span>•</span>
+            <span>|</span>
             <span>{toDisplayWeight(session.totalVolumeLbs, weightUnit).toLocaleString()} {weightUnit} volume</span>
-            <span>•</span>
+            <span>|</span>
             <span>{session.exerciseGroups.reduce((a, g) => a + g.sets.length, 0)} sets logged</span>
           </div>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <button onClick={() => setIsAddDrawerOpen(v => !v)} className="action-btn">
+          <button type="button" onClick={() => setIsAddDrawerOpen(v => !v)} className="action-btn">
             <Plus className="w-4 h-4" />
             <span>Add Exercise</span>
           </button>
-          <button onClick={onFinishWorkout} className="action-btn primary">
+          <button type="button" onClick={onFinishWorkout} className="action-btn primary">
             <Check className="w-4 h-4" />
             <span>Complete</span>
           </button>
@@ -371,17 +424,24 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
       <div className="border-2 border-[#1a1a1a] p-4 bg-white flex flex-col md:flex-row gap-4 items-center justify-between shadow-[2px_2px_0_#1a1a1a]">
         <input
           type="text"
+          maxLength={80}
           value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(sanitizeInput(e.target.value, 80))}
           placeholder="Filter exercises..."
           className="font-mono text-sm border-none focus:outline-none flex-1 w-full bg-transparent"
         />
         <div className="flex gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
           {muscleOptions.map(m => (
-            <button key={m} onClick={() => setSelectedMuscle(m)}
+            <button
+              type="button"
+              key={m}
+              onClick={() => setSelectedMuscle(m)}
               className={`font-mono text-[0.65rem] px-2.5 py-1 uppercase font-semibold transition cursor-pointer border whitespace-nowrap ${
                 selectedMuscle === m ? 'border-[#1a1a1a] bg-[#1a1a1a] text-white' : 'border-[#1a1a1a]/20 bg-transparent text-[#1a1a1a] hover:border-[#1a1a1a]'
-              }`}>{m}</button>
+              }`}
+            >
+              {m}
+            </button>
           ))}
         </div>
       </div>
@@ -393,15 +453,18 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
             <span className="font-mono text-xs uppercase font-bold text-[#1a1a1a]/70">
               Library ({filteredExercises.length} results)
             </span>
-            <button onClick={() => setIsAddDrawerOpen(false)} className="font-mono text-xs text-[#ff4d00] font-bold hover:underline cursor-pointer">[CLOSE]</button>
+            <button type="button" onClick={() => setIsAddDrawerOpen(false)} className="font-mono text-xs text-[#ff4d00] font-bold hover:underline cursor-pointer">[CLOSE]</button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-60 overflow-y-auto">
             {filteredExercises.map(ex => (
-              <div key={ex.id} onClick={() => { onAddExerciseToSession(ex); setIsAddDrawerOpen(false); }}
-                className="p-3 bg-[#f8f7f4] border border-[#1a1a1a] hover:bg-[#ff4d00] hover:text-white cursor-pointer transition flex items-center justify-between group">
+              <div
+                key={ex.id}
+                onClick={() => { onAddExerciseToSession(ex); setIsAddDrawerOpen(false); }}
+                className="p-3 bg-[#f8f7f4] border border-[#1a1a1a] hover:bg-[#ff4d00] hover:text-white cursor-pointer transition flex items-center justify-between group"
+              >
                 <div>
                   <h4 className="font-oswald uppercase text-sm font-semibold">{ex.name}</h4>
-                  <span className="font-mono text-[0.6rem] opacity-70">{ex.muscleGroup} • {ex.equipment}</span>
+                  <span className="font-mono text-[0.6rem] opacity-70">{ex.muscleGroup} | {ex.equipment}</span>
                 </div>
                 <Plus className="w-4 h-4 opacity-70 group-hover:opacity-100" />
               </div>
@@ -418,13 +481,12 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
             reps: 10,
             rpe: 8,
           };
-          const targetSets  = group.targetSets;
-          const done        = group.sets.length;
-          const progress    = targetSets ? Math.min(done / targetSets, 1) : null;
+          const targetSets = group.targetSets;
+          const done       = group.sets.length;
+          const progress   = targetSets ? Math.min(done / targetSets, 1) : null;
 
           return (
             <div key={group.exerciseId} className="border-2 border-[#1a1a1a] bg-white p-6 shadow-[4px_4px_0_#1a1a1a]">
-              {/* Card header */}
               <div className="flex justify-between items-start pb-3 mb-4 border-b-2 border-[#1a1a1a]">
                 <div>
                   <h3 className="font-oswald text-2xl uppercase font-semibold text-[#1a1a1a]">
@@ -432,18 +494,18 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
                   </h3>
                   <div className="flex items-center gap-3 mt-1 flex-wrap">
                     <span className="font-mono text-[0.6rem] text-[#1a1a1a]/60 uppercase">
-                      {group.muscleGroup} • {group.equipment}
+                      {group.muscleGroup} | {group.equipment}
                     </span>
                     {group.targetSets && group.targetReps && (
                       <span className="font-mono text-[0.6rem] bg-[#ff4d00] text-white px-1.5 py-0.5 font-bold uppercase">
-                        Target: {group.targetSets}×{group.targetReps}
+                        Target: {group.targetSets}x{group.targetReps}
                       </span>
                     )}
                   </div>
                 </div>
                 <div className="text-right">
                   <span className="font-mono text-[0.65rem] text-[#1a1a1a]/60 font-semibold uppercase block">
-                    MAX: {displayWeight(group.previousMaxLbs)} {weightUnit}
+                    {group.previousMaxLbs > 0 ? `MAX: ${displayWeight(group.previousMaxLbs)} ${weightUnit}` : 'MAX: --'}
                   </span>
                   {progress !== null && (
                     <div className="mt-2 w-24">
@@ -456,7 +518,6 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
                 </div>
               </div>
 
-              {/* Sets table */}
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
@@ -471,8 +532,11 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
                           <button
                             type="button"
                             onClick={() => setShowRpeInfo(v => !v)}
-                            className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#1a1a1a]/10 hover:bg-[#ff4d00] hover:text-white transition text-[0.5rem] font-black cursor-pointer"
-                          >i</button>
+                            className="inline-flex items-center justify-center w-4 h-4 border border-[#1a1a1a] bg-[#1a1a1a]/10 hover:bg-[#ff4d00] hover:text-white transition text-[0.5rem] font-black cursor-pointer"
+                            aria-label="RPE scale guide"
+                          >
+                            i
+                          </button>
                         </span>
                         {showRpeInfo && <RPE_TOOLTIP onClose={() => setShowRpeInfo(false)} />}
                       </th>
@@ -480,52 +544,79 @@ export const LiveWorkout: React.FC<LiveWorkoutProps> = ({
                     </tr>
                   </thead>
                   <tbody>
-                    {/* Logged sets */}
                     {group.sets.map(setLog => (
-                      <tr key={setLog.id}
+                      <tr
+                        key={setLog.id}
                         className={setLog.isPR
                           ? 'bg-[#fffbeb] text-[#92400e] font-bold border-b border-[#1a1a1a]/10'
                           : 'bg-[#f0fdf4] text-[#166534] border-b border-[#1a1a1a]/10'}
                       >
                         <td className="font-mono text-sm p-3 font-semibold">0{setLog.setNumber}</td>
-                        <td className="font-mono text-sm p-3">{displayWeight(setLog.weightLbs)}×{setLog.reps}</td>
+                        <td className="font-mono text-sm p-3">{displayWeight(setLog.weightLbs)}x{setLog.reps}</td>
                         <td className="font-mono text-sm p-3 font-bold">{displayWeight(setLog.weightLbs)}</td>
                         <td className="font-mono text-sm p-3 font-bold">{setLog.reps}</td>
                         <td className="font-mono text-sm p-3">{setLog.rpe || 8}</td>
                         <td className="font-mono text-xs p-3 text-right font-bold uppercase">
-                          {setLog.isPR ? '🏆 NEW PR' : '✓ LOGGED'}
+                          <span className="inline-flex items-center justify-end gap-1">
+                            {setLog.isPR ? (
+                              <>
+                                <Trophy className="w-3.5 h-3.5 text-[#ff4d00]" />
+                                NEW PR
+                              </>
+                            ) : (
+                              <>
+                                <Check className="w-3.5 h-3.5" />
+                                LOGGED
+                              </>
+                            )}
+                          </span>
                         </td>
                       </tr>
                     ))}
 
-                    {/* Input row */}
                     <tr>
                       <td className="font-mono text-sm p-3 font-semibold text-[#1a1a1a]">0{group.sets.length + 1}</td>
                       <td className="font-mono text-xs p-3 text-[#1a1a1a]/60">
-                        {displayWeight(group.previousMaxLbs)} {weightUnit}
+                        {group.previousMaxLbs > 0 ? `${displayWeight(group.previousMaxLbs)} ${weightUnit}` : '--'}
                       </td>
                       <td className="p-2">
-                        <input type="number" step={weightUnit === 'kg' ? '0.25' : '2.5'} value={inputs.weight}
+                        <input
+                          type="number"
+                          min={0}
+                          max={2500}
+                          step={weightUnit === 'kg' ? '0.25' : '2.5'}
+                          value={inputs.weight}
                           onChange={e => handleInputChange(group.exerciseId, 'weight', parseFloat(e.target.value) || 0)}
                           className="border-2 border-[#1a1a1a] p-1.5 w-20 font-mono text-sm bg-white"
                         />
                       </td>
                       <td className="p-2">
-                        <input type="number" min={1} value={inputs.reps}
-                          onChange={e => handleInputChange(group.exerciseId, 'reps', parseInt(e.target.value) || 0)}
+                        <input
+                          type="number"
+                          min={1}
+                          max={500}
+                          value={inputs.reps}
+                          onChange={e => handleInputChange(group.exerciseId, 'reps', parseInt(e.target.value, 10) || 1)}
                           className="border-2 border-[#1a1a1a] p-1.5 w-16 font-mono text-sm bg-white"
                         />
                       </td>
                       <td className="p-2">
-                        <input type="number" min={1} max={10} step={1} value={inputs.rpe}
-                          onChange={e => handleInputChange(group.exerciseId, 'rpe', parseInt(e.target.value) || 8)}
+                        <input
+                          type="number"
+                          min={1}
+                          max={10}
+                          step={1}
+                          value={inputs.rpe}
+                          onChange={e => handleInputChange(group.exerciseId, 'rpe', parseInt(e.target.value, 10) || 8)}
                           className="border-2 border-[#1a1a1a] p-1.5 w-16 font-mono text-sm bg-white"
                         />
                       </td>
                       <td className="p-2 text-right">
                         <form onSubmit={e => handleLogSet(e, group.exerciseId)} className="inline-block">
-                          <button type="submit"
-                            className="bg-[#1a1a1a] text-[#f8f7f4] border-2 border-[#1a1a1a] px-4 py-1.5 font-oswald uppercase text-sm tracking-wider font-semibold cursor-pointer hover:bg-[#ff4d00] transition">
+                          <button
+                            type="submit"
+                            className="bg-[#1a1a1a] text-[#f8f7f4] border-2 border-[#1a1a1a] px-4 py-1.5 font-oswald uppercase text-sm tracking-wider font-semibold cursor-pointer hover:bg-[#ff4d00] transition"
+                          >
                             Log Set
                           </button>
                         </form>

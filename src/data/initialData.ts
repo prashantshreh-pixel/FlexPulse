@@ -1,19 +1,9 @@
-import { Exercise, WorkoutSession, PersonalRecord, WorkoutProgram } from '../types';
+import { WorkoutSession, PersonalRecord } from '../types';
 
+// Initial personal records start empty until authenticated records load from the API
+export const INITIAL_PRS: PersonalRecord[] = [];
 
-
-// ─────────────────────────────────────────────────────────────────────────────
-// INITIAL PERSONAL RECORDS
-// ─────────────────────────────────────────────────────────────────────────────
-export const INITIAL_PRS: PersonalRecord[] = [
-  { id: 'pr-1', exerciseName: 'Barbell Bench Press',       muscleGroup: 'Chest', weightLbs: 225, reps: 5, estimated1RM: 262, achievedAt: '2026-08-01T14:30:00Z' },
-  { id: 'pr-2', exerciseName: 'Barbell Back Squat',        muscleGroup: 'Legs',  weightLbs: 315, reps: 5, estimated1RM: 367, achievedAt: '2026-08-04T16:00:00Z' },
-  { id: 'pr-3', exerciseName: 'Barbell Conventional Deadlift', muscleGroup: 'Back', weightLbs: 405, reps: 3, estimated1RM: 445, achievedAt: '2026-08-08T18:15:00Z' },
-];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// INITIAL SESSION — starts empty (user picks a routine)
-// ─────────────────────────────────────────────────────────────────────────────
+// Initial session starts empty until the user selects a routine or adds an exercise
 export const INITIAL_WORKOUT: WorkoutSession = {
   id: `session-${Date.now()}`,
   title: "Today's Workout",
