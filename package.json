@@ -8,7 +8,9 @@
     "build": "node node_modules/vite/bin/vite.js build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test:backend": "backend/env/Scripts/python.exe backend/manage.py test api --verbosity=2",
+    "ci": "npm run lint && npm run build && npm run test:backend"
   },
   "dependencies": {
     "lucide-react": "^0.546.0",
