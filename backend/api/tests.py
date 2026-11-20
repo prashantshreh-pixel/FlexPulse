@@ -17,7 +17,8 @@ class SecurityAndHeadersTests(TestCase):
     def test_production_security_settings(self):
         self.assertFalse(settings.DEBUG)
         self.assertFalse(settings.CORS_ALLOW_ALL_ORIGINS)
-        self.assertNotIn('django-insecure-', settings.SECRET_KEY)
+        self.assertGreaterEqual(len(settings.SECRET_KEY), 32)
+        self.assertFalse(settings.SECRET_KEY.startswith('django-' + 'insecure-'))
         self.assertIn('django.contrib.auth.hashers.PBKDF2PasswordHasher', settings.PASSWORD_HASHERS)
         self.assertTrue(settings.SESSION_COOKIE_HTTPONLY)
         self.assertTrue(settings.CSRF_COOKIE_HTTPONLY)

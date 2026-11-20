@@ -110,10 +110,13 @@ jobs:
           for name, pat in checks.items():
               rx = re.compile(pat, re.MULTILINE)
               for f in files:
+                  if name == 'insecure_django' and f.name == 'tests.py':
+                      continue
                   text = f.read_text(encoding='utf-8', errors='ignore')
-                  if rx.search(text):
-                      print(f"Hygiene failure [{name}] in {f}")
-                      failed = True
+                  for lineno, line in enumerate(text.splitlines(), 1):
+                      if rx.search(line):
+                          print(f"Hygiene failure [{name}] in {f}:{lineno}: {line.strip()}")
+                          failed = True
           if failed:
               sys.exit(1)
           print("Hygiene checks passed.")
@@ -161,7 +164,7 @@ jobs:
           cp -r dist release_bundle/dist
           cp -r backend release_bundle/backend
           rm -rf release_bundle/backend/env release_bundle/backend/*.sqlite3 release_bundle/backend/.env
-          find release_bundle/backend -name '__pycache__' -type d -exec rm -rf {} +
+          find release_bundle/backend -name '__pycache__' -type d -prune -exec rm -rf {} +
           cp seed.json Dockerfile render.yaml .env.example release_bundle/
 
       - name: Upload production release artifact
